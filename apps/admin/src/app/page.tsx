@@ -154,8 +154,9 @@ export default function AdminDashboard() {
 
   // Add product helper
   const handleAddProduct = () => {
-    if (!newProduct.name || !newProduct.price) {
-      triggerToast("Please fill all required fields", "warning");
+    const parsedPrice = parseFloat(newProduct.price);
+    if (!newProduct.name || isNaN(parsedPrice) || parsedPrice <= 0) {
+      triggerToast("Please enter a valid name and positive price value", "warning");
       return;
     }
     const id = `${newProduct.category === "diamond" ? "dia" : "jewel"}-${Date.now().toString().slice(-3)}`;
@@ -163,7 +164,7 @@ export default function AdminDashboard() {
       id,
       name: newProduct.name,
       category: newProduct.category,
-      price: parseFloat(newProduct.price),
+      price: parsedPrice,
       inStock: true,
       rating: parseFloat(newProduct.rating) || 5.0,
       image: newProduct.image
@@ -243,7 +244,16 @@ export default function AdminDashboard() {
   };
 
   if (!mounted || !db) {
-    return null;
+    return (
+      <Box sx={{ display: "flex", minHeight: "100vh", alignItems: "center", justifyContent: "center", bgcolor: "#fcfbfa", flexDirection: "column", gap: 2 }}>
+        <Typography variant="h6" sx={{ fontFamily: "serif", letterSpacing: 3, color: "#d4af37" }}>
+          NAKSHTARA
+        </Typography>
+        <Typography variant="caption" sx={{ letterSpacing: 2, color: "#888888" }}>
+          Loading Atelier Database...
+        </Typography>
+      </Box>
+    );
   }
 
   return (
