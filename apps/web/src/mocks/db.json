@@ -1,0 +1,189 @@
+{
+  "announcements": [
+    "Complimentary FedEx® Insured Shipping on All Orders",
+    "Discover the Solitaire Collection: Conflict-Free & Certified GIA",
+    "Book a Private Consultation with Our Jewellery Experts"
+  ],
+  "hero": {
+    "title": "Nakshtara Gems & Fine Jewellery",
+    "subtitle": "Experience the ultimate in diamond craftsmanship and custom fine jewellery.",
+    "description": "Welcome to Nakshtara Gems. Explore our curated selections of GIA certified diamonds, engagement bands, and bespoke jewelry creations crafted by premier artisans."
+  },
+  "about": {
+    "title": "Our Story & Heritage",
+    "description": "Crafting premium certified diamonds and fine bespoke jewelry since 1998, Nakshtara is built on the pillars of impeccable quality, transparency, and high-fashion artisanal heritage.",
+    "origins": "Established originally as a boutique loose diamond wholesaler, Nakshtara quickly gained a reputation among elite global distributors for curating only the top 1% of GIA-graded gemstones. By 2005, the Maison transitioned to offering bespoke retail designs, combining traditional Indian metalworking craftsmanship with sleek contemporary minimalist layouts.",
+    "quote": "A diamond does not shine by itself; it is the craftsman's devotion that wakes the fire hidden inside."
+  },
+  "collections": [
+    {
+      "name": "The Royal Solitaire",
+      "desc": "Pure classic lines showcasing high-carat diamonds of flawless grade.",
+      "badge": "Signature Series",
+      "link": "/shop?category=all",
+      "bgClass": "bg-luxury-ivory/40"
+    },
+    {
+      "name": "Constellation",
+      "desc": "Brilliant arrangements reflecting the alignment of stars and light.",
+      "badge": "Contemporary Fine",
+      "link": "/shop?category=jewellery",
+      "bgClass": "bg-luxury-beige/20"
+    },
+    {
+      "name": "Bespoke Heritage",
+      "desc": "Traditional artisan halo designs utilizing complex patterns and warm colors.",
+      "badge": "Atelier Handcrafted",
+      "link": "/shop?category=jewellery",
+      "bgClass": "bg-luxury-ivory/50"
+    },
+    {
+      "name": "Infinite Eternity",
+      "desc": "Unending circle configurations set with matching ideal-cut diamonds.",
+      "badge": "Wedding & Anniversary",
+      "link": "/shop?category=all",
+      "bgClass": "bg-luxury-beige/30"
+    }
+  ],
+  "products": [
+    {
+      "id": "dia-001",
+      "name": "1.52 Carat Round Cut Brilliant Diamond",
+      "category": "diamond",
+      "shape": "Round",
+      "carat": 1.52,
+      "cut": "Ideal",
+      "color": "D",
+      "clarity": "IF",
+      "certificate": "GIA",
+      "price": 15400,
+      "image": "round-diamond",
+      "rating": 5,
+      "inStock": true
+    },
+    {
+      "id": "dia-002",
+      "name": "2.01 Carat Oval Brilliant Diamond",
+      "category": "diamond",
+      "shape": "Oval",
+      "carat": 2.01,
+      "cut": "Excellent",
+      "color": "E",
+      "clarity": "VVS1",
+      "certificate": "GIA",
+      "price": 24500,
+      "image": "oval-diamond",
+      "rating": 4.8,
+      "inStock": true
+    },
+    {
+      "id": "dia-003",
+      "name": "1.20 Carat Emerald Cut Solitaire Diamond",
+      "category": "diamond",
+      "shape": "Emerald",
+      "carat": 1.2,
+      "cut": "Very Good",
+      "color": "F",
+      "clarity": "VS1",
+      "certificate": "IGI",
+      "price": 8900,
+      "image": "emerald-diamond",
+      "rating": 4.7,
+      "inStock": true
+    },
+    {
+      "id": "dia-004",
+      "name": "1.80 Carat Pear Brilliant Diamond",
+      "category": "diamond",
+      "shape": "Pear",
+      "carat": 1.8,
+      "cut": "Excellent",
+      "color": "G",
+      "clarity": "VVS2",
+      "certificate": "GIA",
+      "price": 14200,
+      "image": "pear-diamond",
+      "rating": 4.9,
+      "inStock": true
+    },
+    {
+      "id": "dia-005",
+      "name": "0.95 Carat Princess Cut Solitaire Diamond",
+      "category": "diamond",
+      "shape": "Princess",
+      "carat": 0.95,
+      "cut": "Ideal",
+      "color": "E",
+      "clarity": "VS2",
+      "certificate": "GIA",
+      "price": 5200,
+      "image": "princess-diamond",
+      "rating": 4.6,
+      "inStock": true
+    },
+    {
+      "id": "jewel-001",
+      "name": "The Royal Solitaire Engagement Ring",
+      "category": "jewellery",
+      "metal": "Platinum",
+      "collection": "Solitaire",
+      "price": 3200,
+      "image": "royal-solitaire-ring",
+      "rating": 5,
+      "inStock": true
+    },
+    {
+      "id": "jewel-002",
+      "name": "Constellation Diamond Eternity Band",
+      "category": "jewellery",
+      "metal": "18k White Gold",
+      "collection": "Eternity",
+      "price": 4500,
+      "image": "constellation-eternity-band",
+      "rating": 4.9,
+      "inStock": true
+    },
+    {
+      "id": "jewel-003",
+      "name": "Bespoke Heritage Emerald Halo Ring",
+      "category": "jewellery",
+      "metal": "18k Yellow Gold",
+      "collection": "Heritage",
+      "price": 6800,
+      "image": "heritage-halo-ring",
+      "rating": 5,
+      "inStock": false
+    },
+    {
+      "id": "jewel-004",
+      "name": "Aura Rose Gold Diamond Studs",
+      "category": "jewellery",
+      "metal": "18k Rose Gold",
+      "collection": "Constellation",
+      "price": 1800,
+      "image": "aura-studs",
+      "rating": 4.7,
+      "inStock": true
+    }
+  ],
+  "bookings": [
+    {
+      "id": "BK-101",
+      "client": "Aarav Sharma",
+      "email": "aarav@example.com",
+      "type": "Virtual",
+      "date": "2026-07-05",
+      "slot": "Morning",
+      "notes": "Interested in 1.5 carat round cut diamond settings."
+    },
+    {
+      "id": "BK-102",
+      "client": "Priya Patel",
+      "email": "priya@example.com",
+      "type": "Showroom",
+      "date": "2026-07-06",
+      "slot": "Afternoon",
+      "notes": "Looking for gold bands or eternity rings."
+    }
+  ]
+}
