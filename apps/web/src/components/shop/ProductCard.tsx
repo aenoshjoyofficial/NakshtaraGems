@@ -2,8 +2,9 @@
 
 import * as React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
-import { Heart, Gem, ArrowRight } from "lucide-react";
+import { Heart, ArrowRight } from "lucide-react";
 import { Product } from "@/mocks/products";
 
 interface ProductCardProps {
@@ -20,6 +21,13 @@ export function ProductCard({ product }: ProductCardProps) {
       currency: "INR",
       maximumFractionDigits: 0,
     }).format(amount);
+  };
+
+  // Category label for the badge
+  const getCategoryLabel = () => {
+    if (product.category === "diamond") return "Loose Diamond";
+    if (product.category === "gemstone") return product.gemType || "Gemstone";
+    return product.collection || "Fine Jewellery";
   };
 
   return (
@@ -41,17 +49,22 @@ export function ProductCard({ product }: ProductCardProps) {
 
       {/* Image Preview Area */}
       <div className="relative aspect-square w-full bg-luxury-ivory/50 flex items-center justify-center overflow-hidden border-b border-luxury-gold/5">
-        {/* Mock luxury graphics placeholder since no real images */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
-          <Gem className="h-10 w-10 text-luxury-gold/40 group-hover:scale-110 transition-transform duration-700" />
-          <span className="text-[10px] tracking-widest uppercase text-luxury-gold font-semibold mt-4">
-            {product.category === "diamond" ? "Loose Diamond" : product.collection}
-          </span>
-        </div>
+        <Image
+          src={product.image}
+          alt={product.name}
+          fill
+          className="object-contain p-4 group-hover:scale-110 transition-transform duration-700 ease-out"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+        />
+
+        {/* Category Badge */}
+        <span className="absolute top-4 left-4 text-[9px] tracking-widest uppercase text-luxury-white bg-luxury-black/70 backdrop-blur-sm font-semibold px-2.5 py-1 z-10">
+          {getCategoryLabel()}
+        </span>
 
         {/* Status Badge */}
         {!product.inStock && (
-          <span className="absolute bottom-4 left-4 bg-luxury-ruby text-luxury-white text-[9px] uppercase tracking-widest font-semibold px-2 py-1">
+          <span className="absolute bottom-4 left-4 bg-luxury-ruby text-luxury-white text-[9px] uppercase tracking-widest font-semibold px-2 py-1 z-10">
             Sold / Bespoke Only
           </span>
         )}
@@ -64,7 +77,7 @@ export function ProductCard({ product }: ProductCardProps) {
             {product.name}
           </h3>
 
-          {/* Conditional diamond specs */}
+          {/* Conditional specs */}
           {product.category === "diamond" ? (
             <div className="flex flex-wrap gap-2 mb-4">
               <span className="text-[9px] font-medium tracking-wider uppercase bg-luxury-beige/40 text-luxury-gray px-2 py-0.5">
@@ -78,6 +91,21 @@ export function ProductCard({ product }: ProductCardProps) {
               </span>
               <span className="text-[9px] font-medium tracking-wider uppercase bg-luxury-beige/40 text-luxury-gray px-2 py-0.5">
                 Clarity: {product.clarity}
+              </span>
+            </div>
+          ) : product.category === "gemstone" ? (
+            <div className="flex flex-wrap gap-2 mb-4">
+              <span className="text-[9px] font-medium tracking-wider uppercase bg-luxury-beige/40 text-luxury-gray px-2 py-0.5">
+                Type: {product.gemType}
+              </span>
+              <span className="text-[9px] font-medium tracking-wider uppercase bg-luxury-beige/40 text-luxury-gray px-2 py-0.5">
+                Carat: {product.carat}
+              </span>
+              <span className="text-[9px] font-medium tracking-wider uppercase bg-luxury-beige/40 text-luxury-gray px-2 py-0.5">
+                Origin: {product.origin}
+              </span>
+              <span className="text-[9px] font-medium tracking-wider uppercase bg-luxury-beige/40 text-luxury-gray px-2 py-0.5">
+                {product.treatment}
               </span>
             </div>
           ) : (

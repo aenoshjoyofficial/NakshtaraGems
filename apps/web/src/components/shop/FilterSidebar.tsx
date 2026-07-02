@@ -4,7 +4,7 @@ import * as React from "react";
 import { ChevronDown, SlidersHorizontal, RotateCcw } from "lucide-react";
 
 export interface FilterState {
-  category: "all" | "diamond" | "jewellery";
+  category: "all" | "diamond" | "jewellery" | "gemstone";
   shape: string[];
   caratMin: number;
   caratMax: number;
@@ -64,7 +64,7 @@ export function FilterSidebar({ filters, onChange, onReset }: FilterSidebarProps
         <div>
           <h4 className="text-[11px] font-bold tracking-widest uppercase text-luxury-black mb-4">Category</h4>
           <div className="flex flex-col gap-2.5">
-            {["all", "diamond", "jewellery"].map((cat) => (
+            {["all", "diamond", "gemstone", "jewellery"].map((cat) => (
               <label key={cat} className="flex items-center gap-3 text-xs uppercase tracking-wider text-luxury-gray hover:text-luxury-black cursor-pointer">
                 <input
                   type="radio"
@@ -73,7 +73,7 @@ export function FilterSidebar({ filters, onChange, onReset }: FilterSidebarProps
                   onChange={() => onChange({ ...filters, category: cat as any })}
                   className="h-4 w-4 border-luxury-gold/30 text-luxury-gold focus:ring-luxury-gold"
                 />
-                {cat === "all" ? "All Showroom" : cat === "diamond" ? "Loose Diamonds" : "Fine Jewellery"}
+                {cat === "all" ? "All Showroom" : cat === "diamond" ? "Loose Diamonds" : cat === "gemstone" ? "Precious Gemstones" : "Fine Jewellery"}
               </label>
             ))}
           </div>
@@ -116,7 +116,7 @@ export function FilterSidebar({ filters, onChange, onReset }: FilterSidebarProps
           <input
             type="range"
             min="1000"
-            max="30000"
+            max="75000"
             step="1000"
             value={filters.priceMax}
             onChange={(e) => onChange({ ...filters, priceMax: parseInt(e.target.value) })}

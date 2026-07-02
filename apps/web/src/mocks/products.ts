@@ -3,8 +3,8 @@ import db from "./db.json";
 export interface Product {
   id: string;
   name: string;
-  category: "diamond" | "jewellery";
-  shape?: "Round" | "Oval" | "Emerald" | "Pear" | "Princess" | "Marquise";
+  category: "diamond" | "jewellery" | "gemstone";
+  shape?: string;
   carat?: number;
   cut?: "Ideal" | "Excellent" | "Very Good" | "Good";
   color?: "D" | "E" | "F" | "G" | "H" | "I" | "J";
@@ -16,6 +16,10 @@ export interface Product {
   collection?: "Solitaire" | "Constellation" | "Heritage" | "Eternity";
   rating: number;
   inStock: boolean;
+  // Gemstone-specific fields
+  gemType?: string;
+  origin?: string;
+  treatment?: string;
 }
 
 export const MOCK_PRODUCTS = db.products as Product[];

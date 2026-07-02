@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import NextImage from "next/image";
 import { ProductCard } from "./ProductCard";
 import { Product } from "@/mocks/products";
 import { Grid, List, HelpCircle } from "lucide-react";
@@ -81,16 +82,22 @@ export function ProductGrid({ products, sortValue, onSortChange }: ProductGridPr
               key={product.id}
               className="flex flex-col sm:flex-row items-center border border-luxury-gold/10 hover:border-luxury-gold/30 bg-luxury-white p-5 gap-6 transition-all duration-300"
             >
-              <div className="h-28 w-28 bg-luxury-ivory/50 flex items-center justify-center shrink-0">
-                <span className="text-[10px] tracking-widest uppercase text-luxury-gold font-bold">
-                  {product.category}
-                </span>
+              <div className="h-28 w-28 bg-luxury-ivory/50 flex items-center justify-center shrink-0 relative overflow-hidden">
+                <NextImage
+                  src={product.image}
+                  alt={product.name}
+                  fill
+                  className="object-contain p-2"
+                  sizes="112px"
+                />
               </div>
               <div className="flex-grow text-center sm:text-left">
                 <h3 className="font-serif text-lg text-luxury-black font-light mb-1.5">{product.name}</h3>
                 <p className="text-xs text-luxury-gray mb-3">
                   {product.category === "diamond"
                     ? `Cert: ${product.certificate} • Shape: ${product.shape} • Carat: ${product.carat}ct • Clarity: ${product.clarity}`
+                    : product.category === "gemstone"
+                    ? `Type: ${product.gemType} • Carat: ${product.carat}ct • Origin: ${product.origin} • ${product.treatment}`
                     : `Metal: ${product.metal} • Collection: ${product.collection}`}
                 </p>
                 <span className="font-sans text-sm font-semibold text-luxury-black">

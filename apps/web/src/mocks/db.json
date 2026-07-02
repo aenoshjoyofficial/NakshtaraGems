@@ -57,7 +57,7 @@
       "clarity": "IF",
       "certificate": "GIA",
       "price": 15400,
-      "image": "round-diamond",
+      "image": "/images/products/round-diamond.png",
       "rating": 5,
       "inStock": true
     },
@@ -72,7 +72,7 @@
       "clarity": "VVS1",
       "certificate": "GIA",
       "price": 24500,
-      "image": "oval-diamond",
+      "image": "/images/products/oval-diamond.png",
       "rating": 4.8,
       "inStock": true
     },
@@ -87,7 +87,7 @@
       "clarity": "VS1",
       "certificate": "IGI",
       "price": 8900,
-      "image": "emerald-diamond",
+      "image": "/images/products/emerald-diamond.png",
       "rating": 4.7,
       "inStock": true
     },
@@ -102,7 +102,7 @@
       "clarity": "VVS2",
       "certificate": "GIA",
       "price": 14200,
-      "image": "pear-diamond",
+      "image": "/images/products/pear-diamond.png",
       "rating": 4.9,
       "inStock": true
     },
@@ -117,8 +117,53 @@
       "clarity": "VS2",
       "certificate": "GIA",
       "price": 5200,
-      "image": "princess-diamond",
+      "image": "/images/products/princess-diamond.png",
       "rating": 4.6,
+      "inStock": true
+    },
+    {
+      "id": "gem-001",
+      "name": "3.45 Carat Natural Yellow Sapphire (Pukhraj)",
+      "category": "gemstone",
+      "gemType": "Yellow Sapphire",
+      "shape": "Cushion",
+      "carat": 3.45,
+      "origin": "Sri Lanka (Ceylon)",
+      "treatment": "Unheated",
+      "certificate": "GIA",
+      "price": 42000,
+      "image": "/images/products/yellow-sapphire.png",
+      "rating": 5,
+      "inStock": true
+    },
+    {
+      "id": "gem-002",
+      "name": "2.85 Carat Natural Burmese Ruby (Manik)",
+      "category": "gemstone",
+      "gemType": "Ruby",
+      "shape": "Oval",
+      "carat": 2.85,
+      "origin": "Myanmar (Burma)",
+      "treatment": "Unheated",
+      "certificate": "GIA",
+      "price": 68000,
+      "image": "/images/products/ruby-gemstone.png",
+      "rating": 5,
+      "inStock": true
+    },
+    {
+      "id": "gem-003",
+      "name": "4.20 Carat Natural Aquamarine (Beruj)",
+      "category": "gemstone",
+      "gemType": "Aquamarine",
+      "shape": "Oval",
+      "carat": 4.2,
+      "origin": "Brazil",
+      "treatment": "None",
+      "certificate": "IGI",
+      "price": 18500,
+      "image": "/images/products/aquamarine-gemstone.png",
+      "rating": 4.8,
       "inStock": true
     },
     {
@@ -128,7 +173,7 @@
       "metal": "Platinum",
       "collection": "Solitaire",
       "price": 3200,
-      "image": "royal-solitaire-ring",
+      "image": "/images/products/royal-solitaire-ring.png",
       "rating": 5,
       "inStock": true
     },
@@ -139,7 +184,7 @@
       "metal": "18k White Gold",
       "collection": "Eternity",
       "price": 4500,
-      "image": "constellation-eternity-band",
+      "image": "/images/products/constellation-eternity-band.png",
       "rating": 4.9,
       "inStock": true
     },
@@ -150,7 +195,7 @@
       "metal": "18k Yellow Gold",
       "collection": "Heritage",
       "price": 6800,
-      "image": "heritage-halo-ring",
+      "image": "/images/products/heritage-halo-ring.png",
       "rating": 5,
       "inStock": false
     },
@@ -161,7 +206,7 @@
       "metal": "18k Rose Gold",
       "collection": "Constellation",
       "price": 1800,
-      "image": "aura-studs",
+      "image": "/images/products/aura-studs.png",
       "rating": 4.7,
       "inStock": true
     }

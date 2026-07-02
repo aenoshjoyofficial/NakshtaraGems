@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { MOCK_PRODUCTS, Product } from "@/mocks/products";
@@ -26,6 +27,14 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
       currency: "INR",
       maximumFractionDigits: 0,
     }).format(amount);
+  };
+
+  // Category label
+  const getCategoryLabel = () => {
+    if (!product) return "";
+    if (product.category === "diamond") return "Loose Diamond";
+    if (product.category === "gemstone") return product.gemType || "Gemstone";
+    return product.collection || "Fine Jewellery";
   };
 
   if (!product) {
@@ -60,18 +69,28 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
             {/* Image Preview Block */}
-            <div className="bg-luxury-ivory/40 border border-luxury-gold/10 p-12 flex flex-col items-center justify-center min-h-[450px] relative">
-              <Sparkles className="absolute top-6 left-6 h-6 w-6 text-luxury-gold/40 animate-pulse" />
-              <div className="text-center">
-                <span className="text-[10px] tracking-[0.4em] uppercase text-luxury-gold font-bold block mb-4">
-                  {product.category === "diamond" ? "Loose Diamond" : product.collection}
-                </span>
-                <h2 className="font-serif text-2xl md:text-3xl text-luxury-black font-light leading-relaxed max-w-md mx-auto">
-                  {product.name}
-                </h2>
+            <div className="bg-luxury-ivory/40 border border-luxury-gold/10 p-8 flex flex-col items-center justify-center min-h-[450px] relative overflow-hidden">
+              <Sparkles className="absolute top-6 left-6 h-6 w-6 text-luxury-gold/40 animate-pulse z-10" />
+
+              {/* Category Badge */}
+              <span className="absolute top-6 right-6 text-[9px] tracking-widest uppercase text-luxury-white bg-luxury-black/70 backdrop-blur-sm font-semibold px-3 py-1.5 z-10">
+                {getCategoryLabel()}
+              </span>
+
+              {/* Actual Product Image */}
+              <div className="relative w-full h-full min-h-[350px]">
+                <Image
+                  src={product.image}
+                  alt={product.name}
+                  fill
+                  className="object-contain p-4"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  priority
+                />
               </div>
+
               {!product.inStock && (
-                <span className="absolute bottom-6 right-6 bg-luxury-ruby text-luxury-white text-[9px] uppercase tracking-widest font-semibold px-3 py-1.5">
+                <span className="absolute bottom-6 right-6 bg-luxury-ruby text-luxury-white text-[9px] uppercase tracking-widest font-semibold px-3 py-1.5 z-10">
                   Bespoke Order Only
                 </span>
               )}
@@ -81,7 +100,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             <div className="flex flex-col justify-between">
               <div>
                 <span className="text-[10px] tracking-[0.3em] uppercase text-luxury-gold font-semibold block mb-2">
-                  Fine Jewelry & Solitaires
+                  {product.category === "gemstone" ? "Precious Gemstones" : "Fine Jewelry & Solitaires"}
                 </span>
                 <h1 className="font-serif text-3xl md:text-4xl text-luxury-black font-light tracking-wide mb-4">
                   {product.name}
@@ -126,6 +145,33 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                         </div>
                         <div className="border border-luxury-gold/5 bg-luxury-ivory/20 p-3 col-span-2">
                           <span className="text-[9px] uppercase text-luxury-gray block mb-1">Grading Lab Certificate</span>
+                          <span className="text-xs font-semibold text-luxury-black font-sans">{product.certificate} Certified</span>
+                        </div>
+                      </>
+                    ) : product.category === "gemstone" ? (
+                      <>
+                        <div className="border border-luxury-gold/5 bg-luxury-ivory/20 p-3">
+                          <span className="text-[9px] uppercase text-luxury-gray block mb-1">Gemstone Type</span>
+                          <span className="text-xs font-semibold text-luxury-black font-sans">{product.gemType}</span>
+                        </div>
+                        <div className="border border-luxury-gold/5 bg-luxury-ivory/20 p-3">
+                          <span className="text-[9px] uppercase text-luxury-gray block mb-1">Carat Weight</span>
+                          <span className="text-xs font-semibold text-luxury-black font-sans">{product.carat} Carats</span>
+                        </div>
+                        <div className="border border-luxury-gold/5 bg-luxury-ivory/20 p-3">
+                          <span className="text-[9px] uppercase text-luxury-gray block mb-1">Shape</span>
+                          <span className="text-xs font-semibold text-luxury-black font-sans">{product.shape}</span>
+                        </div>
+                        <div className="border border-luxury-gold/5 bg-luxury-ivory/20 p-3">
+                          <span className="text-[9px] uppercase text-luxury-gray block mb-1">Origin</span>
+                          <span className="text-xs font-semibold text-luxury-black font-sans">{product.origin}</span>
+                        </div>
+                        <div className="border border-luxury-gold/5 bg-luxury-ivory/20 p-3">
+                          <span className="text-[9px] uppercase text-luxury-gray block mb-1">Treatment</span>
+                          <span className="text-xs font-semibold text-luxury-black font-sans">{product.treatment}</span>
+                        </div>
+                        <div className="border border-luxury-gold/5 bg-luxury-ivory/20 p-3">
+                          <span className="text-[9px] uppercase text-luxury-gray block mb-1">Lab Certificate</span>
                           <span className="text-xs font-semibold text-luxury-black font-sans">{product.certificate} Certified</span>
                         </div>
                       </>

@@ -13,7 +13,7 @@ const INITIAL_FILTERS: FilterState = {
   shape: [],
   caratMin: 0.5,
   caratMax: 5.0,
-  priceMax: 30000,
+  priceMax: 75000,
   metal: [],
   cut: [],
 };
