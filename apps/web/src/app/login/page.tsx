@@ -4,9 +4,13 @@ import * as React from "react";
 import Link from "next/link";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { useRouter } from "next/navigation";
+import { useApp } from "@/context/AppContext";
 import { Mail, Lock, User, Eye, EyeOff, Sparkles } from "lucide-react";
 
 export default function LoginPage() {
+  const { user, login: contextLogin } = useApp();
+  const router = useRouter();
   const [activeTab, setActiveTab] = React.useState<"signin" | "signup">("signin");
   const [showPassword, setShowPassword] = React.useState(false);
   const [successMsg, setSuccessMsg] = React.useState("");
@@ -20,10 +24,17 @@ export default function LoginPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (activeTab === "signin") {
+      contextLogin(formData.email.split("@")[0].toUpperCase(), formData.email);
       setSuccessMsg("Welcome back to Nakshtara Gems. Accessing client vault...");
     } else {
+      contextLogin(formData.name, formData.email);
       setSuccessMsg("Account successfully registered to the Maison. Welcome!");
     }
+    
+    // Immediate redirect to homepage
+    setTimeout(() => {
+      router.push("/");
+    }, 1500);
   };
 
   return (
@@ -82,10 +93,10 @@ export default function LoginPage() {
                   {successMsg}
                 </p>
                 <Link
-                  href="/dashboard"
+                  href="/shop"
                   className="inline-block bg-luxury-black hover:bg-luxury-gold text-luxury-white hover:text-luxury-black px-6 py-3 text-xs font-bold uppercase tracking-widest transition-all"
                 >
-                  Go to Dashboard
+                  Go to Showroom
                 </Link>
               </div>
             ) : (

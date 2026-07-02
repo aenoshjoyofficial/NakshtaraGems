@@ -2,18 +2,29 @@
 
 import * as React from "react";
 import Link from "next/link";
+import NextImage from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, Heart, ShoppingBag, User, Menu, X, ChevronDown, Gem } from "lucide-react";
 
 import db from "@/mocks/db.json";
+import { useApp } from "@/context/AppContext";
+import { Plus, Minus, Trash2 } from "lucide-react";
+import { MOCK_PRODUCTS } from "@/mocks/products";
 
 const ANNOUNCEMENT_TEXTS = db.announcements;
 
 export function Header() {
+  const { user, cart, wishlist, removeFromCart, updateCartQuantity, logout } = useApp();
   const [announcementIdx, setAnnouncementIdx] = React.useState(0);
   const [isScrolled, setIsScrolled] = React.useState(false);
   const [activeMenu, setActiveMenu] = React.useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+
+  // Interactivity States
+  const [isSearchOpen, setIsSearchOpen] = React.useState(false);
+  const [searchQuery, setSearchQuery] = React.useState("");
+  const [isCartOpen, setIsCartOpen] = React.useState(false);
+  const [isUserDropdownOpen, setIsUserDropdownOpen] = React.useState(false);
 
   React.useEffect(() => {
     const timer = setInterval(() => {
@@ -76,13 +87,15 @@ export function Header() {
 
             {/* Logo */}
             <div className="flex-1 md:flex-initial text-center md:text-left">
-              <Link href="/" className="inline-flex flex-col items-center">
-                <span className="font-serif text-xl sm:text-2xl md:text-3xl tracking-[0.18em] uppercase text-luxury-black font-light">
-                  Nakshtara
-                </span>
-                <span className="text-[8px] md:text-[10px] tracking-[0.45em] uppercase text-luxury-gold font-medium mt-0.5">
-                  Gems & Fine Jewellery
-                </span>
+              <Link href="/" className="inline-flex items-center">
+                <NextImage
+                  src="/logo.png"
+                  alt="Nakshatra Gems & Jewelry"
+                  width={160}
+                  height={50}
+                  className="h-10 w-auto object-contain mix-blend-multiply"
+                  priority
+                />
               </Link>
             </div>
 
@@ -121,24 +134,96 @@ export function Header() {
 
             {/* Right Icons */}
             <div className="flex items-center space-x-4 md:space-x-6 text-luxury-black">
-              <button className="hover:text-luxury-gold transition-colors" aria-label="Search">
+              <button onClick={() => setIsSearchOpen(true)} className="hover:text-luxury-gold transition-colors cursor-pointer" aria-label="Search">
                 <Search className="h-5 w-5 stroke-[1.25]" />
               </button>
               <Link href="/wishlist" className="hover:text-luxury-gold transition-colors relative" aria-label="Wishlist">
                 <Heart className="h-5 w-5 stroke-[1.25]" />
-                <span className="absolute -top-1.5 -right-1.5 bg-luxury-gold text-luxury-black text-[9px] font-bold h-4 w-4 rounded-full flex items-center justify-center">
-                  0
-                </span>
+                {wishlist.length > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 bg-luxury-gold text-luxury-black text-[9px] font-bold h-4 w-4 rounded-full flex items-center justify-center">
+                    {wishlist.length}
+                  </span>
+                )}
               </Link>
-              <button className="hover:text-luxury-gold transition-colors relative" aria-label="Cart">
+              <button onClick={() => setIsCartOpen(true)} className="hover:text-luxury-gold transition-colors relative cursor-pointer" aria-label="Cart">
                 <ShoppingBag className="h-5 w-5 stroke-[1.25]" />
-                <span className="absolute -top-1.5 -right-1.5 bg-luxury-black text-luxury-white text-[9px] font-bold h-4 w-4 rounded-full flex items-center justify-center">
-                  0
-                </span>
+                {cart.length > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 bg-luxury-black text-luxury-white text-[9px] font-bold h-4 w-4 rounded-full flex items-center justify-center">
+                    {cart.reduce((total, item) => total + item.quantity, 0)}
+                  </span>
+                )}
               </button>
-              <Link href="/login" className="hidden sm:inline-block hover:text-luxury-gold transition-colors" aria-label="Account">
-                <User className="h-5 w-5 stroke-[1.25]" />
-              </Link>
+              {user ? (
+                <div className="relative">
+                  <button
+                    onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
+                    className="flex items-center gap-1.5 focus:outline-none hover:text-luxury-gold transition-colors cursor-pointer"
+                    aria-label="User Menu"
+                  >
+                    <div className="h-7 w-7 rounded-full overflow-hidden relative border border-luxury-gold/20 shrink-0">
+                      <NextImage
+                        src="/avatar.png"
+                        alt="User Profile"
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                    <ChevronDown className={`h-3 w-3 stroke-[2] transition-transform duration-300 ${isUserDropdownOpen ? "rotate-180" : ""}`} />
+                  </button>
+
+                  <AnimatePresence>
+                    {isUserDropdownOpen && (
+                      <React.Fragment>
+                        {/* Backdrop to close dropdown on click outside */}
+                        <div className="fixed inset-0 z-10" onClick={() => setIsUserDropdownOpen(false)} />
+                        
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 8 }}
+                          transition={{ duration: 0.2 }}
+                          className="absolute right-0 mt-2.5 w-44 bg-luxury-white border border-luxury-gold/15 shadow-xl py-2 z-20 font-sans"
+                        >
+                          <div className="px-4 py-2 border-b border-luxury-gold/5 mb-1.5">
+                            <p className="text-[10px] text-luxury-gray uppercase tracking-widest block font-medium">Welcome,</p>
+                            <p className="text-xs text-luxury-black font-semibold truncate uppercase tracking-wider">{user.name.split(" ")[0]}</p>
+                          </div>
+                          
+                          <Link
+                            href="/dashboard"
+                            onClick={() => setIsUserDropdownOpen(false)}
+                            className="block px-4 py-2 text-xs text-luxury-gray hover:text-luxury-black hover:bg-luxury-ivory/20 transition-all uppercase tracking-wider font-semibold"
+                          >
+                            Dashboard
+                          </Link>
+                          
+                          <Link
+                            href="/track-order"
+                            onClick={() => setIsUserDropdownOpen(false)}
+                            className="block px-4 py-2 text-xs text-luxury-gray hover:text-luxury-black hover:bg-luxury-ivory/20 transition-all uppercase tracking-wider font-semibold"
+                          >
+                            Track Order
+                          </Link>
+                          
+                          <button
+                            onClick={() => {
+                              setIsUserDropdownOpen(false);
+                              logout();
+                            }}
+                            className="w-full text-left px-4 py-2 text-xs text-luxury-ruby hover:bg-luxury-ivory/20 transition-all uppercase tracking-wider font-semibold border-t border-luxury-gold/5 mt-1.5 pt-2 cursor-pointer"
+                          >
+                            Logout
+                          </button>
+                        </motion.div>
+                      </React.Fragment>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ) : (
+                <Link href="/login" className="hidden sm:inline-block hover:text-luxury-gold transition-colors" aria-label="Account">
+                  <User className="h-5 w-5 stroke-[1.25]" />
+                </Link>
+              )}
             </div>
           </div>
         </div>
@@ -310,6 +395,239 @@ export function Header() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Search Overlay Modal */}
+      <AnimatePresence>
+        {isSearchOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-luxury-white/95 backdrop-blur-md z-[100] flex flex-col p-6 md:p-20 overflow-y-auto"
+          >
+            <div className="max-w-4xl mx-auto w-full flex-grow flex flex-col">
+              {/* Close Button */}
+              <div className="flex justify-end mb-8">
+                <button
+                  onClick={() => {
+                    setIsSearchOpen(false);
+                    setSearchQuery("");
+                  }}
+                  className="text-luxury-black hover:text-luxury-gold transition-colors flex items-center gap-2 text-xs uppercase tracking-widest font-bold cursor-pointer"
+                >
+                  Close <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              {/* Input */}
+              <div className="border-b border-luxury-gold/30 focus-within:border-luxury-gold py-4 flex items-center mb-10">
+                <Search className="h-8 w-8 text-luxury-gold mr-4" />
+                <input
+                  type="text"
+                  placeholder="SEARCH THE MAISON'S VAULTS..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="bg-transparent text-xl sm:text-3xl font-serif text-luxury-black placeholder-luxury-gray/40 w-full uppercase tracking-wider focus:outline-none"
+                  autoFocus
+                />
+              </div>
+
+              {/* Instant Results */}
+              {searchQuery.trim() !== "" && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {MOCK_PRODUCTS.filter((p) => p.name.toLowerCase().includes(searchQuery.toLowerCase())).slice(0, 4).map((p) => (
+                    <Link
+                      key={p.id}
+                      href={`/shop/${p.id}`}
+                      onClick={() => {
+                        setIsSearchOpen(false);
+                        setSearchQuery("");
+                      }}
+                      className="flex items-center gap-4 p-3 border border-luxury-gold/5 bg-luxury-ivory/30 hover:border-luxury-gold/25 transition-all duration-300 group"
+                    >
+                      <div className="h-16 w-16 relative bg-luxury-white shrink-0">
+                        <NextImage
+                          src={p.image}
+                          alt={p.name}
+                          fill
+                          className="object-contain p-1"
+                          sizes="64px"
+                        />
+                      </div>
+                      <div>
+                        <h4 className="font-serif text-xs text-luxury-black font-light group-hover:text-luxury-gold transition-colors duration-300">
+                          {p.name}
+                        </h4>
+                        <span className="text-[10px] text-luxury-gray">
+                          {p.category === "diamond" ? "Loose Diamond" : p.category === "gemstone" ? p.gemType : "Fine Jewellery"}
+                        </span>
+                      </div>
+                    </Link>
+                  ))}
+                  {MOCK_PRODUCTS.filter((p) => p.name.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
+                    <p className="text-xs uppercase tracking-widest text-luxury-gray col-span-2 text-center py-8">
+                      No matching creations found
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Cart Side Drawer */}
+      <AnimatePresence>
+        {isCartOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-luxury-black/60 z-[100] backdrop-blur-sm"
+          >
+            {/* Click outside to close */}
+            <div className="absolute inset-0" onClick={() => setIsCartOpen(false)} />
+
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "tween", duration: 0.4 }}
+              className="absolute right-0 top-0 h-full w-full max-w-md bg-luxury-white shadow-2xl flex flex-col justify-between p-6 z-10 border-l border-luxury-gold/10"
+            >
+              <div>
+                <div className="flex items-center justify-between border-b border-luxury-gold/20 pb-4 mb-6">
+                  <span className="font-serif text-lg tracking-widest uppercase text-luxury-black font-medium">
+                    Your Jewellery Box ({cart.reduce((t, i) => t + i.quantity, 0)})
+                  </span>
+                  <button onClick={() => setIsCartOpen(false)} aria-label="Close Cart" className="cursor-pointer">
+                    <X className="h-6 w-6 text-luxury-black hover:text-luxury-gold transition-colors" />
+                  </button>
+                </div>
+
+                {/* Cart Items list */}
+                {cart.length === 0 ? (
+                  <div className="py-20 text-center flex flex-col items-center">
+                    <Gem className="h-10 w-10 text-luxury-gold/30 mb-4 animate-pulse" />
+                    <p className="text-xs uppercase tracking-widest text-luxury-gray mb-6">
+                      Your Jewellery Box is Empty
+                    </p>
+                    <Link
+                      href="/shop"
+                      onClick={() => setIsCartOpen(false)}
+                      className="bg-luxury-black hover:bg-luxury-gold text-luxury-white hover:text-luxury-black px-6 py-3 text-[10px] font-bold uppercase tracking-widest transition-all"
+                    >
+                      Browse Showroom
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2 scrollbar-thin">
+                    {cart.map((item) => (
+                      <div
+                        key={item.product.id}
+                        className="flex items-center gap-4 p-3 border border-luxury-gold/5 bg-luxury-ivory/20"
+                      >
+                        <div className="h-16 w-16 relative bg-luxury-white shrink-0 border border-luxury-gold/10">
+                          <NextImage
+                            src={item.product.image}
+                            alt={item.product.name}
+                            fill
+                            className="object-contain p-1.5"
+                            sizes="64px"
+                          />
+                        </div>
+                        <div className="flex-grow">
+                          <h4 className="font-serif text-xs text-luxury-black font-light line-clamp-1">
+                            {item.product.name}
+                          </h4>
+                          <span className="text-[10px] text-luxury-gray block mb-2">
+                            {new Intl.NumberFormat("en-IN", {
+                              style: "currency",
+                              currency: "INR",
+                              maximumFractionDigits: 0,
+                            }).format(item.product.price)}
+                          </span>
+                          
+                          {/* Quantity selector */}
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => updateCartQuantity(item.product.id, item.quantity - 1)}
+                              className="p-1 border border-luxury-gold/10 hover:border-luxury-gold hover:text-luxury-gold transition-all cursor-pointer"
+                            >
+                              <Minus className="h-3 w-3" />
+                            </button>
+                            <span className="text-xs font-semibold px-2">{item.quantity}</span>
+                            <button
+                              onClick={() => updateCartQuantity(item.product.id, item.quantity + 1)}
+                              className="p-1 border border-luxury-gold/10 hover:border-luxury-gold hover:text-luxury-gold transition-all cursor-pointer"
+                            >
+                              <Plus className="h-3 w-3" />
+                            </button>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => removeFromCart(item.product.id)}
+                          className="text-luxury-gray hover:text-luxury-ruby p-1 transition-colors cursor-pointer"
+                          aria-label="Remove item"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Totals & Checkout button */}
+              {cart.length > 0 && (
+                <div className="border-t border-luxury-gold/20 pt-6">
+                  <div className="flex justify-between text-xs uppercase tracking-wider text-luxury-gray mb-2">
+                    <span>Subtotal</span>
+                    <span>
+                      {new Intl.NumberFormat("en-IN", {
+                        style: "currency",
+                        currency: "INR",
+                        maximumFractionDigits: 0,
+                      }).format(cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0))}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-xs uppercase tracking-wider text-luxury-gray mb-4">
+                    <span>Est. Taxes (3% GST)</span>
+                    <span>
+                      {new Intl.NumberFormat("en-IN", {
+                        style: "currency",
+                        currency: "INR",
+                        maximumFractionDigits: 0,
+                      }).format(Math.round(cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0) * 0.03))}
+                    </span>
+                  </div>
+                  <div className="flex justify-between font-serif text-base text-luxury-black font-semibold border-t border-luxury-gold/10 pt-4 mb-6">
+                    <span>TOTAL</span>
+                    <span>
+                      {new Intl.NumberFormat("en-IN", {
+                        style: "currency",
+                        currency: "INR",
+                        maximumFractionDigits: 0,
+                      }).format(
+                        cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0) +
+                        Math.round(cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0) * 0.03)
+                      )}
+                    </span>
+                  </div>
+                  <Link
+                    href="/checkout"
+                    onClick={() => setIsCartOpen(false)}
+                    className="block text-center bg-luxury-black hover:bg-luxury-gold text-luxury-white hover:text-luxury-black py-4 text-xs font-bold uppercase tracking-widest transition-all"
+                  >
+                    Proceed to Checkout
+                  </Link>
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 }
+

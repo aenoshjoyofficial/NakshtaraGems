@@ -246,10 +246,12 @@ export default function AdminDashboard() {
   if (!mounted || !db) {
     return (
       <Box sx={{ display: "flex", minHeight: "100vh", alignItems: "center", justifyContent: "center", bgcolor: "#fcfbfa", flexDirection: "column", gap: 2 }}>
-        <Typography variant="h6" sx={{ fontFamily: "serif", letterSpacing: 3, color: "#d4af37" }}>
-          NAKSHTARA
-        </Typography>
-        <Typography variant="caption" sx={{ letterSpacing: 2, color: "#888888" }}>
+        <img
+          src="/logo.png"
+          alt="Nakshatra Gems & Jewelry"
+          style={{ height: "60px", objectFit: "contain" }}
+        />
+        <Typography variant="caption" sx={{ letterSpacing: 2, color: "#888888", mt: 1 }}>
           Loading Atelier Database...
         </Typography>
       </Box>
@@ -260,11 +262,13 @@ export default function AdminDashboard() {
     <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "#fcfbfa" }}>
       {/* Sidebar navigation */}
       <Box sx={{ width: 260, bgcolor: "#111111", color: "#ffffff", display: "flex", flexDirection: "column" }}>
-        <Box sx={{ p: 3, borderBottom: "1px solid #222222", textAlign: "center" }}>
-          <Typography variant="h6" sx={{ fontFamily: "serif", letterSpacing: 3, color: "#d4af37" }}>
-            NAKSHTARA
-          </Typography>
-          <Typography variant="caption" sx={{ letterSpacing: 2, color: "#888888", display: "block", mt: 0.5 }}>
+        <Box sx={{ p: 3, borderBottom: "1px solid #222222", display: "flex", flexDirection: "column", alignItems: "center" }}>
+          <img
+            src="/logo.png"
+            alt="Nakshatra Gems & Jewelry"
+            style={{ height: "40px", objectFit: "contain", filter: "invert(1) brightness(2.5)" }}
+          />
+          <Typography variant="caption" sx={{ letterSpacing: 2, color: "#888888", display: "block", mt: 1 }}>
             ADMIN PORTAL
           </Typography>
         </Box>

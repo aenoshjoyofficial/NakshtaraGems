@@ -6,13 +6,15 @@ import Image from "next/image";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { MOCK_PRODUCTS, Product } from "@/mocks/products";
+import { useApp } from "@/context/AppContext";
 import { ArrowLeft, Shield, Truck, Sparkles, PhoneCall, Heart } from "lucide-react";
 
 export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = React.use(params);
+  const { wishlist, toggleWishlist, addToCart } = useApp();
   const [product, setProduct] = React.useState<Product | null>(null);
-  const [isWishlisted, setIsWishlisted] = React.useState(false);
   const [quantity, setQuantity] = React.useState(1);
+  const isWishlisted = product ? wishlist.includes(product.id) : false;
 
   React.useEffect(() => {
     const found = MOCK_PRODUCTS.find((p) => p.id === id);
@@ -199,12 +201,27 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               <div className="border-t border-luxury-gold/10 pt-6">
                 {product.inStock ? (
                   <div className="flex flex-col sm:flex-row gap-4 mb-6">
-                    <button className="flex-1 bg-luxury-black hover:bg-luxury-gold text-luxury-white hover:text-luxury-black py-3.5 text-xs font-bold uppercase tracking-widest transition-all">
+                    <button
+                      onClick={() => {
+                        const result = addToCart(product, quantity);
+                        if (!result.success) {
+                          alert(result.message);
+                        } else {
+                          alert(result.message);
+                        }
+                      }}
+                      className="flex-1 bg-luxury-black hover:bg-luxury-gold text-luxury-white hover:text-luxury-black py-3.5 text-xs font-bold uppercase tracking-widest transition-all cursor-pointer"
+                    >
                       Add to Jewellery Box
                     </button>
                     <button
-                      onClick={() => setIsWishlisted(!isWishlisted)}
-                      className="border border-luxury-gold/30 hover:border-luxury-gold px-6 py-3.5 flex items-center justify-center gap-2 text-xs uppercase tracking-widest text-luxury-black hover:text-luxury-gold transition-colors font-bold"
+                      onClick={() => {
+                        const result = toggleWishlist(product.id);
+                        if (!result.success) {
+                          alert(result.message);
+                        }
+                      }}
+                      className="border border-luxury-gold/30 hover:border-luxury-gold px-6 py-3.5 flex items-center justify-center gap-2 text-xs uppercase tracking-widest text-luxury-black hover:text-luxury-gold transition-colors font-bold cursor-pointer"
                     >
                       <Heart className={`h-4 w-4 ${isWishlisted ? "fill-luxury-ruby text-luxury-ruby" : ""}`} /> Wishlist
                     </button>

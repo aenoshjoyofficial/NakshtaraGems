@@ -6,13 +6,15 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { Heart, ArrowRight } from "lucide-react";
 import { Product } from "@/mocks/products";
+import { useApp } from "@/context/AppContext";
 
 interface ProductCardProps {
   product: Product;
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  const [isWishlisted, setIsWishlisted] = React.useState(false);
+  const { wishlist, toggleWishlist } = useApp();
+  const isWishlisted = wishlist.includes(product.id);
 
   // Formats currency elegantly
   const formatPrice = (amount: number) => {
@@ -30,6 +32,15 @@ export function ProductCard({ product }: ProductCardProps) {
     return product.collection || "Fine Jewellery";
   };
 
+  const handleWishlistClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    const result = toggleWishlist(product.id);
+    if (!result.success) {
+      alert(result.message);
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 15 }}
@@ -40,8 +51,8 @@ export function ProductCard({ product }: ProductCardProps) {
     >
       {/* Wishlist Trigger */}
       <button
-        onClick={() => setIsWishlisted(!isWishlisted)}
-        className="absolute top-4 right-4 z-10 p-2 rounded-full bg-luxury-white/80 hover:bg-luxury-white text-luxury-black/80 hover:text-luxury-ruby transition-all duration-300 shadow-sm border border-luxury-gold/5"
+        onClick={handleWishlistClick}
+        className="absolute top-4 right-4 z-10 p-2 rounded-full bg-luxury-white/80 hover:bg-luxury-white text-luxury-black/80 hover:text-luxury-ruby transition-all duration-300 shadow-sm border border-luxury-gold/5 cursor-pointer"
         aria-label="Add to Wishlist"
       >
         <Heart className={`h-4.5 w-4.5 stroke-[1.5] ${isWishlisted ? "fill-luxury-ruby text-luxury-ruby" : ""}`} />

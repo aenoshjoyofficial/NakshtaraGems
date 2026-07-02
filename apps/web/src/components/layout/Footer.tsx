@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import NextImage from "next/image";
 import { ArrowRight, Mail } from "lucide-react";
 
 export function Footer() {
@@ -16,12 +17,16 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
           {/* Brand Info */}
           <div>
-            <span className="font-serif text-lg tracking-[0.2em] uppercase text-luxury-white block mb-2">
-              Nakshtara
-            </span>
-            <span className="text-[9px] tracking-[0.4em] uppercase text-luxury-gold block mb-6">
-              Gems & Fine Jewellery
-            </span>
+            <div className="mb-6">
+              <NextImage
+                src="/logo.png"
+                alt="Nakshatra Gems & Jewelry"
+                width={150}
+                height={50}
+                className="h-10 w-auto object-contain"
+                style={{ filter: "invert(1) brightness(3)" }}
+              />
+            </div>
             <p className="text-[11px] text-luxury-gray leading-relaxed mb-6">
               Crafting timeless luxury and hand-curated certified diamonds since 1998. Every gem is selected for its purity, fire, and brilliance.
             </p>
