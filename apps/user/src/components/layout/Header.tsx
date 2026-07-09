@@ -11,14 +11,15 @@ import { useApp } from "@/context/AppContext";
 import { Plus, Minus, Trash2 } from "lucide-react";
 import { MOCK_PRODUCTS } from "@/mocks/products";
 
-const ANNOUNCEMENT_TEXTS = db.announcements;
-
 export function Header() {
   const { user, cart, wishlist, removeFromCart, updateCartQuantity, logout } = useApp();
   const [announcementIdx, setAnnouncementIdx] = React.useState(0);
   const [isScrolled, setIsScrolled] = React.useState(false);
   const [activeMenu, setActiveMenu] = React.useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+
+  const [headerData, setHeaderData] = React.useState<any>((db as any).header || {});
+  const [announcementTexts, setAnnouncementTexts] = React.useState<string[]>(db.announcements || []);
 
   // Interactivity States
   const [isSearchOpen, setIsSearchOpen] = React.useState(false);
@@ -27,11 +28,24 @@ export function Header() {
   const [isUserDropdownOpen, setIsUserDropdownOpen] = React.useState(false);
 
   React.useEffect(() => {
+    fetch("/api/db")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data) {
+          if (data.header) setHeaderData(data.header);
+          if (data.announcements) setAnnouncementTexts(data.announcements);
+        }
+      })
+      .catch((err) => console.error("Error loading fresh database:", err));
+  }, []);
+
+  React.useEffect(() => {
+    if (announcementTexts.length === 0) return;
     const timer = setInterval(() => {
-      setAnnouncementIdx((prev) => (prev + 1) % ANNOUNCEMENT_TEXTS.length);
+      setAnnouncementIdx((prev) => (prev + 1) % announcementTexts.length);
     }, 5000);
     return () => clearInterval(timer);
-  }, []);
+  }, [announcementTexts]);
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -58,7 +72,7 @@ export function Header() {
             transition={{ duration: 0.5 }}
             className="px-4"
           >
-            {ANNOUNCEMENT_TEXTS[announcementIdx]}
+            {announcementTexts[announcementIdx]}
           </motion.div>
         </AnimatePresence>
       </div>
@@ -89,8 +103,8 @@ export function Header() {
             <div className="flex-1 md:flex-initial text-center md:text-left">
               <Link href="/" className="inline-flex items-center">
                 <NextImage
-                  src="/logo.png"
-                  alt="Nakshatra Gems & Jewelry"
+                  src={headerData?.logo || "/logo.png"}
+                  alt={headerData?.brandName || "Nakshatra Gems & Jewelry"}
                   width={160}
                   height={50}
                   className="h-10 w-auto object-contain mix-blend-multiply"
@@ -101,35 +115,26 @@ export function Header() {
 
             {/* Desktop Navigation Links */}
             <div className="hidden md:flex items-center space-x-8 font-sans text-[11px] font-medium uppercase tracking-[0.2em] text-luxury-black/80">
-              <div
-                className="relative cursor-pointer py-2 hover:text-luxury-gold transition-colors"
-                onMouseEnter={() => setActiveMenu("diamonds")}
-              >
-                <span className="flex items-center gap-1">
-                  Diamonds <ChevronDown className="h-3 w-3 opacity-60" />
-                </span>
-              </div>
-
-              <div
-                className="relative cursor-pointer py-2 hover:text-luxury-gold transition-colors"
-                onMouseEnter={() => setActiveMenu("jewellery")}
-              >
-                <span className="flex items-center gap-1">
-                  Jewellery <ChevronDown className="h-3 w-3 opacity-60" />
-                </span>
-              </div>
-
-              <Link href="/collections" className="hover:text-luxury-gold transition-colors py-2">
-                Collections
-              </Link>
-
-              <Link href="/about" className="hover:text-luxury-gold transition-colors py-2">
-                Heritage
-              </Link>
-
-              <Link href="/contact" className="hover:text-luxury-gold transition-colors py-2">
-                Consultation
-              </Link>
+              {((headerData as any).navLinks || []).map((item: any) => {
+                if (item.dropdown) {
+                  return (
+                    <div
+                      key={item.id}
+                      className="relative cursor-pointer py-2 hover:text-luxury-gold transition-colors"
+                      onMouseEnter={() => setActiveMenu(item.id)}
+                    >
+                      <span className="flex items-center gap-1">
+                        {item.label} <ChevronDown className="h-3 w-3 opacity-60" />
+                      </span>
+                    </div>
+                  );
+                }
+                return (
+                  <Link key={item.id} href={item.href || "#"} className="hover:text-luxury-gold transition-colors py-2">
+                    {item.label}
+                  </Link>
+                );
+              })}
             </div>
 
             {/* Right Icons */}
@@ -230,118 +235,62 @@ export function Header() {
 
         {/* Mega Menu Dropdowns */}
         <AnimatePresence>
-          {activeMenu && (
-            <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 10 }}
-              transition={{ duration: 0.3 }}
-              className="absolute left-0 w-full bg-luxury-white/95 border-b border-luxury-gold/15 shadow-xl z-40 py-10"
-              onMouseEnter={() => setActiveMenu(activeMenu)}
-            >
-              <div className="max-w-7xl mx-auto px-8 grid grid-cols-4 gap-8">
-                {activeMenu === "diamonds" && (
-                  <>
-                    <div>
+          {activeMenu && (() => {
+            const activeLink = ((headerData as any).navLinks || []).find((item: any) => item.id === activeMenu);
+            if (!activeLink || !activeLink.dropdown) return null;
+
+            const dropdown = activeLink.dropdown;
+            return (
+              <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                transition={{ duration: 0.3 }}
+                className="absolute left-0 w-full bg-luxury-white/95 border-b border-luxury-gold/15 shadow-xl z-40 py-10"
+                onMouseEnter={() => setActiveMenu(activeMenu)}
+              >
+                <div className="max-w-7xl mx-auto px-8 grid grid-cols-4 gap-8">
+                  {(dropdown.columns || []).map((col: any, colIdx: number) => (
+                    <div key={colIdx}>
                       <h4 className="font-serif text-sm tracking-[0.1em] text-luxury-black font-semibold mb-4 border-b border-luxury-gold/20 pb-2">
-                        Shop By Shape
-                      </h4>
-                      <ul className="space-y-2.5 text-xs text-luxury-gray hover:text-luxury-black">
-                        <li><Link href="/shop?shape=round" className="hover:text-luxury-gold transition-colors">Round Cut</Link></li>
-                        <li><Link href="/shop?shape=oval" className="hover:text-luxury-gold transition-colors">Oval Cut</Link></li>
-                        <li><Link href="/shop?shape=emerald" className="hover:text-luxury-gold transition-colors">Emerald Cut</Link></li>
-                        <li><Link href="/shop?shape=pear" className="hover:text-luxury-gold transition-colors">Pear Cut</Link></li>
-                        <li><Link href="/shop?shape=princess" className="hover:text-luxury-gold transition-colors">Princess Cut</Link></li>
-                      </ul>
-                    </div>
-                    <div>
-                      <h4 className="font-serif text-sm tracking-[0.1em] text-luxury-black font-semibold mb-4 border-b border-luxury-gold/20 pb-2">
-                        Diamond Education
+                        {col.title}
                       </h4>
                       <ul className="space-y-2.5 text-xs text-luxury-gray">
-                        <li><Link href="/blog/the-4-cs" className="hover:text-luxury-gold transition-colors">The 4 Cs of Diamonds</Link></li>
-                        <li><Link href="/blog/gia-certification" className="hover:text-luxury-gold transition-colors">GIA Grading Guide</Link></li>
-                        <li><Link href="/blog/conflict-free" className="hover:text-luxury-gold transition-colors">Ethical & Conflict-Free</Link></li>
-                        <li><Link href="/blog/fancy-color" className="hover:text-luxury-gold transition-colors">Fancy Colored Diamonds</Link></li>
+                        {(col.links || []).map((lnk: any, lnkIdx: number) => (
+                          <li key={lnkIdx}>
+                            <Link href={lnk.href || "#"} className="hover:text-luxury-gold transition-colors">
+                              {lnk.label}
+                            </Link>
+                          </li>
+                        ))}
                       </ul>
                     </div>
-                    <div>
-                      <h4 className="font-serif text-sm tracking-[0.1em] text-luxury-black font-semibold mb-4 border-b border-luxury-gold/20 pb-2">
-                        Bespoke Services
-                      </h4>
-                      <ul className="space-y-2.5 text-xs text-luxury-gray">
-                        <li><Link href="/custom" className="hover:text-luxury-gold transition-colors">Build Custom Ring</Link></li>
-                        <li><Link href="/custom" className="hover:text-luxury-gold transition-colors">Build Custom Pendant</Link></li>
-                        <li><Link href="/consultation" className="hover:text-luxury-gold transition-colors">Private Virtual Consultation</Link></li>
-                      </ul>
-                    </div>
+                  ))}
+                  
+                  {dropdown.featuredCard && (
                     <div className="bg-luxury-ivory p-6 border border-luxury-gold/10 rounded flex flex-col justify-between">
                       <div>
-                        <span className="text-[9px] tracking-widest uppercase text-luxury-gold font-semibold block mb-1">Exclusive</span>
-                        <h5 className="font-serif text-base text-luxury-black font-medium mb-2">The Royal Solitaire</h5>
+                        {dropdown.featuredCard.tag && (
+                          <span className="text-[9px] tracking-widest uppercase text-luxury-gold font-semibold block mb-1">
+                            {dropdown.featuredCard.tag}
+                          </span>
+                        )}
+                        <h5 className="font-serif text-base text-luxury-black font-medium mb-2">
+                          {dropdown.featuredCard.title}
+                        </h5>
                         <p className="text-[11px] text-luxury-gray leading-relaxed mb-4">
-                          Handpicked certified diamonds set in our signature premium platinum settings.
+                          {dropdown.featuredCard.desc}
                         </p>
                       </div>
-                      <Link href="/shop" className="text-xs uppercase tracking-wider font-semibold text-luxury-black hover:text-luxury-gold transition-colors flex items-center gap-1.5">
+                      <Link href={dropdown.featuredCard.link || "#"} className="text-xs uppercase tracking-wider font-semibold text-luxury-black hover:text-luxury-gold transition-colors flex items-center gap-1.5">
                         Explore <Gem className="h-3 w-3 text-luxury-gold" />
                       </Link>
                     </div>
-                  </>
-                )}
-
-                {activeMenu === "jewellery" && (
-                  <>
-                    <div>
-                      <h4 className="font-serif text-sm tracking-[0.1em] text-luxury-black font-semibold mb-4 border-b border-luxury-gold/20 pb-2">
-                        Fine Rings
-                      </h4>
-                      <ul className="space-y-2.5 text-xs text-luxury-gray">
-                        <li><Link href="/shop?category=engagement" className="hover:text-luxury-gold transition-colors">Engagement Rings</Link></li>
-                        <li><Link href="/shop?category=eternity" className="hover:text-luxury-gold transition-colors">Eternity Bands</Link></li>
-                        <li><Link href="/shop?category=cocktail" className="hover:text-luxury-gold transition-colors">Cocktail Rings</Link></li>
-                        <li><Link href="/shop?category=stackable" className="hover:text-luxury-gold transition-colors">Stackable Rings</Link></li>
-                      </ul>
-                    </div>
-                    <div>
-                      <h4 className="font-serif text-sm tracking-[0.1em] text-luxury-black font-semibold mb-4 border-b border-luxury-gold/20 pb-2">
-                        Necklaces & Pendants
-                      </h4>
-                      <ul className="space-y-2.5 text-xs text-luxury-gray">
-                        <li><Link href="/shop?category=pendant" className="hover:text-luxury-gold transition-colors">Solitaire Pendants</Link></li>
-                        <li><Link href="/shop?category=tennis-neck" className="hover:text-luxury-gold transition-colors">Tennis Necklaces</Link></li>
-                        <li><Link href="/shop?category=choker" className="hover:text-luxury-gold transition-colors">Luxury Chokers</Link></li>
-                        <li><Link href="/shop?category=gemstone" className="hover:text-luxury-gold transition-colors">Gemstone Necklaces</Link></li>
-                      </ul>
-                    </div>
-                    <div>
-                      <h4 className="font-serif text-sm tracking-[0.1em] text-luxury-black font-semibold mb-4 border-b border-luxury-gold/20 pb-2">
-                        Earrings & Bracelets
-                      </h4>
-                      <ul className="space-y-2.5 text-xs text-luxury-gray">
-                        <li><Link href="/shop?category=studs" className="hover:text-luxury-gold transition-colors">Diamond Studs</Link></li>
-                        <li><Link href="/shop?category=hoops" className="hover:text-luxury-gold transition-colors">Chandelier & Hoops</Link></li>
-                        <li><Link href="/shop?category=tennis-brac" className="hover:text-luxury-gold transition-colors">Tennis Bracelets</Link></li>
-                        <li><Link href="/shop?category=cuffs" className="hover:text-luxury-gold transition-colors">Bespoke Cuffs</Link></li>
-                      </ul>
-                    </div>
-                    <div className="bg-luxury-ivory p-6 border border-luxury-gold/10 rounded flex flex-col justify-between">
-                      <div>
-                        <span className="text-[9px] tracking-widest uppercase text-luxury-gold font-semibold block mb-1">New In</span>
-                        <h5 className="font-serif text-base text-luxury-black font-medium mb-2">Constellation Earrings</h5>
-                        <p className="text-[11px] text-luxury-gray leading-relaxed mb-4">
-                          Inspired by high-fashion aesthetics and crafted to catch light from every angle.
-                        </p>
-                      </div>
-                      <Link href="/shop" className="text-xs uppercase tracking-wider font-semibold text-luxury-black hover:text-luxury-gold transition-colors">
-                        View Collection
-                      </Link>
-                    </div>
-                  </>
-                )}
-              </div>
-            </motion.div>
-          )}
+                  )}
+                </div>
+              </motion.div>
+            );
+          })()}
         </AnimatePresence>
       </nav>
 
@@ -371,19 +320,43 @@ export function Header() {
                   </button>
                 </div>
                 <ul className="space-y-6 text-xs uppercase tracking-widest font-semibold text-luxury-black/90">
-                  <li>
-                    <button onClick={() => toggleMenu("diamonds-mob")} className="flex items-center justify-between w-full">
-                      Diamonds <ChevronDown className="h-4 w-4" />
-                    </button>
-                  </li>
-                  <li>
-                    <button onClick={() => toggleMenu("jewellery-mob")} className="flex items-center justify-between w-full">
-                      Jewellery <ChevronDown className="h-4 w-4" />
-                    </button>
-                  </li>
-                  <li><Link href="/collections" onClick={() => setMobileMenuOpen(false)}>Collections</Link></li>
-                  <li><Link href="/about" onClick={() => setMobileMenuOpen(false)}>Heritage</Link></li>
-                  <li><Link href="/contact" onClick={() => setMobileMenuOpen(false)}>Consultation</Link></li>
+                  {((headerData as any).navLinks || []).map((item: any) => {
+                    if (item.dropdown) {
+                      return (
+                        <li key={item.id}>
+                          <button onClick={() => toggleMenu(`${item.id}-mob`)} className="flex items-center justify-between w-full">
+                            {item.label} <ChevronDown className="h-4 w-4" />
+                          </button>
+                          {/* Render mobile sub-menu items if open */}
+                          {activeMenu === `${item.id}-mob` && (
+                            <ul className="pl-4 mt-3 space-y-3.5 text-[10px] text-luxury-gray lowercase">
+                              {(item.dropdown.columns || []).flatMap((col: any) => col.links || []).map((lnk: any, lnkIdx: number) => (
+                                <li key={lnkIdx}>
+                                  <Link
+                                    href={lnk.href || "#"}
+                                    onClick={() => {
+                                      setMobileMenuOpen(false);
+                                      setActiveMenu(null);
+                                    }}
+                                    className="hover:text-luxury-gold transition-colors block"
+                                  >
+                                    {lnk.label}
+                                  </Link>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </li>
+                      );
+                    }
+                    return (
+                      <li key={item.id}>
+                        <Link href={item.href || "#"} onClick={() => setMobileMenuOpen(false)}>
+                          {item.label}
+                        </Link>
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
               <div className="border-t border-luxury-gold/20 pt-6">

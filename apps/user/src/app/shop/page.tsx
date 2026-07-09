@@ -1,6 +1,8 @@
 "use client";
 
 import * as React from "react";
+import { Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { FilterSidebar, FilterState } from "@/components/shop/FilterSidebar";
@@ -18,10 +20,38 @@ const INITIAL_FILTERS: FilterState = {
   cut: [],
 };
 
-export default function ShopPage() {
+function ShopContent() {
+  const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = React.useState("");
   const [filters, setFilters] = React.useState<FilterState>(INITIAL_FILTERS);
   const [sortValue, setSortValue] = React.useState("featured");
+  const [products, setProducts] = React.useState<Product[]>(MOCK_PRODUCTS);
+
+  // Fetch dynamic products at runtime
+  React.useEffect(() => {
+    fetch("/api/db")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.products) {
+          setProducts(data.products);
+        }
+      })
+      .catch((err) => console.error("Error loading fresh shop catalog:", err));
+  }, []);
+
+  // Sync filters with URL search parameters
+  React.useEffect(() => {
+    const categoryParam = searchParams.get("category");
+    const shapeParam = searchParams.get("shape");
+    const metalParam = searchParams.get("metal");
+
+    setFilters((prev) => ({
+      ...prev,
+      category: (categoryParam as any) || "all",
+      shape: shapeParam ? [shapeParam] : prev.shape,
+      metal: metalParam ? [metalParam] : prev.metal,
+    }));
+  }, [searchParams]);
 
   const resetFilters = () => {
     setFilters(INITIAL_FILTERS);
@@ -30,7 +60,7 @@ export default function ShopPage() {
 
   // Filter products based on search query and current filter state
   const filteredProducts = React.useMemo(() => {
-    let result = [...MOCK_PRODUCTS];
+    let result = products.filter((p) => !p.draft);
 
     // Search query
     if (searchQuery.trim() !== "") {
@@ -138,5 +168,13 @@ export default function ShopPage() {
 
       <Footer />
     </>
+  );
+}
+
+export default function ShopPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-luxury-white flex items-center justify-center font-serif text-luxury-gold uppercase tracking-widest text-xs">Loading Showroom...</div>}>
+      <ShopContent />
+    </Suspense>
   );
 }

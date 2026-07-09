@@ -4,10 +4,189 @@
     "Discover the Solitaire Collection: Conflict-Free & Certified GIA",
     "Book a Private Consultation with Our Jewellery Experts"
   ],
+  "header": {
+    "brandName": "Nakshatra Gems & Fine Jewellery",
+    "logo": "/logo.png",
+    "navLinks": [
+      {
+        "id": "diamonds",
+        "label": "Diamonds",
+        "href": "",
+        "dropdown": {
+          "columns": [
+            {
+              "title": "Shop By Shape",
+              "links": [
+                {
+                  "label": "Round Cut",
+                  "href": "/shop?shape=round"
+                },
+                {
+                  "label": "Oval Cut",
+                  "href": "/shop?shape=oval"
+                },
+                {
+                  "label": "Emerald Cut",
+                  "href": "/shop?shape=emerald"
+                },
+                {
+                  "label": "Pear Cut",
+                  "href": "/shop?shape=pear"
+                },
+                {
+                  "label": "Princess Cut",
+                  "href": "/shop?shape=princess"
+                }
+              ]
+            },
+            {
+              "title": "Diamond Education",
+              "links": [
+                {
+                  "label": "The 4 Cs of Diamonds",
+                  "href": "/blog/the-4-cs"
+                },
+                {
+                  "label": "GIA Grading Guide",
+                  "href": "/blog/gia-certification"
+                },
+                {
+                  "label": "Ethical & Conflict-Free",
+                  "href": "/blog/conflict-free"
+                },
+                {
+                  "label": "Fancy Colored Diamonds",
+                  "href": "/blog/fancy-color"
+                }
+              ]
+            },
+            {
+              "title": "Bespoke Services",
+              "links": [
+                {
+                  "label": "Build Custom Ring",
+                  "href": "/custom"
+                },
+                {
+                  "label": "Build Custom Pendant",
+                  "href": "/custom"
+                },
+                {
+                  "label": "Private Virtual Consultation",
+                  "href": "/consultation"
+                }
+              ]
+            }
+          ],
+          "featuredCard": {
+            "tag": "Exclusive",
+            "title": "The Royal Solitaire",
+            "desc": "Handpicked certified diamonds set in our signature premium platinum settings.",
+            "link": "/shop"
+          }
+        }
+      },
+      {
+        "id": "jewellery",
+        "label": "Jewellery",
+        "href": "",
+        "dropdown": {
+          "columns": [
+            {
+              "title": "Fine Rings",
+              "links": [
+                {
+                  "label": "Engagement Rings",
+                  "href": "/shop?category=engagement"
+                },
+                {
+                  "label": "Eternity Bands",
+                  "href": "/shop?category=eternity"
+                },
+                {
+                  "label": "Cocktail Rings",
+                  "href": "/shop?category=cocktail"
+                },
+                {
+                  "label": "Stackable Rings",
+                  "href": "/shop?category=stackable"
+                }
+              ]
+            },
+            {
+              "title": "Necklaces & Pendants",
+              "links": [
+                {
+                  "label": "Solitaire Pendants",
+                  "href": "/shop?category=pendant"
+                },
+                {
+                  "label": "Tennis Necklaces",
+                  "href": "/shop?category=tennis-neck"
+                },
+                {
+                  "label": "Luxury Chokers",
+                  "href": "/shop?category=choker"
+                },
+                {
+                  "label": "Gemstone Necklaces",
+                  "href": "/shop?category=gemstone"
+                }
+              ]
+            },
+            {
+              "title": "Earrings & Bracelets",
+              "links": [
+                {
+                  "label": "Diamond Studs",
+                  "href": "/shop?category=studs"
+                },
+                {
+                  "label": "Chandelier & Hoops",
+                  "href": "/shop?category=hoops"
+                },
+                {
+                  "label": "Tennis Bracelets",
+                  "href": "/shop?category=tennis-brac"
+                },
+                {
+                  "label": "Bespoke Cuffs",
+                  "href": "/shop?category=cuffs"
+                }
+              ]
+            }
+          ],
+          "featuredCard": {
+            "tag": "New In",
+            "title": "Constellation Earrings",
+            "desc": "Inspired by high-fashion aesthetics and crafted to catch light from every angle.",
+            "link": "/shop"
+          }
+        }
+      },
+      {
+        "id": "collections",
+        "label": "Collections",
+        "href": "/collections"
+      },
+      {
+        "id": "about",
+        "label": "About",
+        "href": "/about"
+      },
+      {
+        "id": "contact",
+        "label": "Contact",
+        "href": "/contact"
+      }
+    ]
+  },
   "hero": {
+    "badge": "The Pinnacle of Craftsmanship",
     "title": "Nakshtara Gems & Fine Jewellery",
     "subtitle": "Experience the ultimate in diamond craftsmanship and custom fine jewellery.",
-    "description": "Welcome to Nakshtara Gems. Explore our curated selections of GIA certified diamonds, engagement bands, and bespoke jewelry creations crafted by premier artisans."
+    "description": "Welcome to Nakshtara Gems. Explore our curated selections of GIA certified diamonds, engagement bands, and bespoke jewelry creations crafted by premier artisans.",
+    "bgImage": ""
   },
   "about": {
     "title": "Our Story & Heritage",
@@ -47,21 +226,6 @@
   ],
   "products": [
     {
-      "id": "dia-001",
-      "name": "1.52 Carat Round Cut Brilliant Diamond",
-      "category": "diamond",
-      "shape": "Round",
-      "carat": 1.52,
-      "cut": "Ideal",
-      "color": "D",
-      "clarity": "IF",
-      "certificate": "GIA",
-      "price": 15400,
-      "image": "/images/products/round-diamond.png",
-      "rating": 5,
-      "inStock": true
-    },
-    {
       "id": "dia-002",
       "name": "2.01 Carat Oval Brilliant Diamond",
       "category": "diamond",
@@ -74,7 +238,8 @@
       "price": 24500,
       "image": "/images/products/oval-diamond.png",
       "rating": 4.8,
-      "inStock": true
+      "inStock": true,
+      "draft": false
     },
     {
       "id": "dia-003",
@@ -197,7 +362,7 @@
       "price": 6800,
       "image": "/images/products/heritage-halo-ring.png",
       "rating": 5,
-      "inStock": false
+      "inStock": true
     },
     {
       "id": "jewel-004",
@@ -209,6 +374,24 @@
       "image": "/images/products/aura-studs.png",
       "rating": 4.7,
       "inStock": true
+    },
+    {
+      "id": "dia-589",
+      "name": "2.01 Carat Oval Brilliant Diamond",
+      "category": "diamond",
+      "price": 24500,
+      "inStock": true,
+      "stockCount": 10,
+      "draft": false,
+      "rating": 4.8,
+      "image": "/images/products/oval-diamond.png",
+      "images": [],
+      "shape": "Oval",
+      "carat": 2.01,
+      "cut": "Excellent",
+      "color": "E",
+      "clarity": "VVS1",
+      "certificate": "GIA"
     }
   ],
   "bookings": [

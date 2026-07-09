@@ -12,10 +12,14 @@ export interface Product {
   certificate?: "GIA" | "IGI" | "HRD";
   price: number;
   image: string;
+  images?: string[];  // Up to 4 product images (1000×1000px, < 1MB each)
+  video?: string;     // Short product showcase video (< 50MB, MP4)
   metal?: "Platinum" | "18k White Gold" | "18k Yellow Gold" | "18k Rose Gold";
   collection?: "Solitaire" | "Constellation" | "Heritage" | "Eternity";
   rating: number;
   inStock: boolean;
+  draft?: boolean;      // Whether the product is a draft (hidden from storefront)
+  stockCount?: number;  // The manual quantity of items available
   // Gemstone-specific fields
   gemType?: string;
   origin?: string;

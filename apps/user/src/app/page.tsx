@@ -68,7 +68,15 @@ export default function Home() {
       <main className="flex-grow">
         {/* Hero Section */}
         <section className="relative h-[90vh] min-h-[600px] flex items-center justify-center overflow-hidden bg-luxury-black text-luxury-white">
-          <div className="absolute inset-0 bg-radial-[circle_at_center,_var(--color-luxury-charcoal)_0%,_#050505_100%] opacity-90 z-0" />
+          {(db.hero as any).bgImage ? (
+            <img
+              src={(db.hero as any).bgImage}
+              alt="Hero Background"
+              className="absolute inset-0 w-full h-full object-cover z-0 opacity-40 animate-fade-in"
+            />
+          ) : (
+            <div className="absolute inset-0 bg-radial-[circle_at_center,_var(--color-luxury-charcoal)_0%,_#050505_100%] opacity-90 z-0" />
+          )}
 
           {/* Decorative luxury sparkles overlay */}
           <div className="absolute inset-0 pointer-events-none opacity-20 z-0 bg-[radial-gradient(ellipse_at_center,_var(--color-luxury-gold-light)_0%,_transparent_70%)]" />
@@ -80,7 +88,7 @@ export default function Home() {
               transition={{ duration: 0.8 }}
               className="text-[10px] md:text-xs uppercase tracking-[0.4em] text-luxury-gold font-semibold mb-4"
             >
-              The Pinnacle of Craftsmanship
+              {(db.hero as any).badge || "The Pinnacle of Craftsmanship"}
             </motion.span>
             
             <motion.h1
