@@ -1,26 +1,29 @@
+"use client";
+
 import * as React from "react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 
 export default function FAQPage() {
-  const faqs = [
-    {
-      q: "Are all Nakshtara diamonds certified?",
-      a: "Yes. All our loose diamonds above 0.3 carats come with an official grading report from the GIA (Gemological Institute of America). Smaller accent diamonds are rigorously graded by our in-house certified gemologists."
-    },
-    {
-      q: "Can I customize the metal setting of a ring?",
-      a: "Absolutely. We offer complete bespoke design services. You can choose from Platinum, 18k White Gold, 18k Yellow Gold, and 18k Rose Gold. Reach out to our atelier consultants to initiate a request."
-    },
-    {
-      q: "What is your shipping and return policy?",
-      a: "We offer complimentary, fully insured FedEx shipping within India. If you're not completely satisfied, you can initiate a return or exchange within 14 days of delivery (excludes custom bespoke orders)."
-    },
-    {
-      q: "How can I book a showroom viewing?",
-      a: "Showroom viewings in Mumbai are scheduled via our Consultation page. We require booking at least 24 hours in advance to prepare specific selections for your arrival."
-    }
-  ];
+  const [faqs, setFaqs] = React.useState<any[]>([]);
+
+  React.useEffect(() => {
+    fetch("/api/db")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.officialSettings && data.officialSettings.faqContent) {
+          try {
+            const parsed = JSON.parse(data.officialSettings.faqContent);
+            if (Array.isArray(parsed)) {
+              setFaqs(parsed);
+            }
+          } catch (e) {
+            console.error("Failed to parse FAQ JSON string:", e);
+          }
+        }
+      })
+      .catch((err) => console.error("Error loading FAQs:", err));
+  }, []);
 
   return (
     <>
@@ -37,12 +40,18 @@ export default function FAQPage() {
           </div>
 
           <div className="space-y-8">
-            {faqs.map((faq, i) => (
-              <div key={i} className="border border-luxury-gold/15 p-6 bg-luxury-ivory/10">
-                <h3 className="font-serif text-base text-luxury-black font-semibold mb-2">{faq.q}</h3>
-                <p className="text-xs text-luxury-gray leading-relaxed">{faq.a}</p>
+            {faqs.length === 0 ? (
+              <div className="text-center py-8 text-xs text-luxury-gray">
+                Loading Frequently Asked Questions from the Maison database...
               </div>
-            ))}
+            ) : (
+              faqs.map((faq, i) => (
+                <div key={i} className="border border-luxury-gold/15 p-6 bg-luxury-ivory/10">
+                  <h3 className="font-serif text-base text-luxury-black font-semibold mb-2">{faq.q}</h3>
+                  <p className="text-xs text-luxury-gray leading-relaxed">{faq.a}</p>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </main>

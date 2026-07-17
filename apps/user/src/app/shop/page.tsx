@@ -7,7 +7,7 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { FilterSidebar, FilterState } from "@/components/shop/FilterSidebar";
 import { ProductGrid } from "@/components/shop/ProductGrid";
-import { MOCK_PRODUCTS, Product } from "@/mocks/products";
+import type { Product } from "@/types/product";
 import { Search, RotateCcw } from "lucide-react";
 
 const INITIAL_FILTERS: FilterState = {
@@ -25,7 +25,7 @@ function ShopContent() {
   const [searchQuery, setSearchQuery] = React.useState("");
   const [filters, setFilters] = React.useState<FilterState>(INITIAL_FILTERS);
   const [sortValue, setSortValue] = React.useState("featured");
-  const [products, setProducts] = React.useState<Product[]>(MOCK_PRODUCTS);
+  const [products, setProducts] = React.useState<Product[]>([]);
 
   // Fetch dynamic products at runtime
   React.useEffect(() => {
@@ -158,7 +158,7 @@ function ShopContent() {
           {/* Main Layout Area */}
           <div className="flex flex-col lg:flex-row gap-10">
             {/* Left Sidebar filters */}
-            <FilterSidebar filters={filters} onChange={setFilters} onReset={resetFilters} />
+            <FilterSidebar filters={filters} onChange={setFilters} onReset={resetFilters} products={products} />
 
             {/* Right Product Grid results */}
             <ProductGrid products={filteredProducts} sortValue={sortValue} onSortChange={setSortValue} />

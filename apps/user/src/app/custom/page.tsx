@@ -12,7 +12,7 @@ export default function CustomBuilderPage() {
   const [selectedMetal, setSelectedMetal] = React.useState("Platinum");
   const [caratWeight, setCaratWeight] = React.useState(1.0);
 
-  const shapes = [
+  const defaultShapes = [
     { name: "Round", desc: "Brilliant & Classic", multiplier: 1.0 },
     { name: "Oval", desc: "Modern & Elongated", multiplier: 1.1 },
     { name: "Emerald", desc: "Elegant Step-Cut", multiplier: 0.95 },
@@ -20,19 +20,39 @@ export default function CustomBuilderPage() {
     { name: "Princess", desc: "Contemporary Square", multiplier: 0.9 },
   ];
 
-  const settings = [
+  const defaultSettings = [
     { name: "Classic Solitaire", desc: "Four-prong classic, maximum light return.", basePrice: 40000 },
     { name: "Royal Halo", desc: "A border of micro-pavé diamonds.", basePrice: 65000 },
     { name: "Tension Setting", desc: "Floating diamond illusion, ultra-modern.", basePrice: 55000 },
     { name: "Vintage Milgrain", desc: "Intricate antique-style gold borders.", basePrice: 70000 },
   ];
 
-  const metals = [
+  const defaultMetals = [
     { name: "Platinum", desc: "Precious & Pure White", addedCost: 25000 },
     { name: "18k White Gold", desc: "Bright Rhodium Finish", addedCost: 15000 },
     { name: "18k Yellow Gold", desc: "Warm & Traditional", addedCost: 12000 },
     { name: "18k Rose Gold", desc: "Sleek & Contemporary", addedCost: 12000 },
   ];
+
+  const [shapes, setShapes] = React.useState(defaultShapes);
+  const [settings, setSettings] = React.useState(defaultSettings);
+  const [metals, setMetals] = React.useState(defaultMetals);
+  const [diamondCostPerCarat, setDiamondCostPerCarat] = React.useState(125000);
+
+  React.useEffect(() => {
+    fetch("/api/db")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.customBuilderConfig) {
+          const cfg = data.customBuilderConfig;
+          if (cfg.shapes && cfg.shapes.length > 0) setShapes(cfg.shapes);
+          if (cfg.settings && cfg.settings.length > 0) setSettings(cfg.settings);
+          if (cfg.metals && cfg.metals.length > 0) setMetals(cfg.metals);
+          if (cfg.diamondCostPerCarat) setDiamondCostPerCarat(cfg.diamondCostPerCarat);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // Calculate dynamic pricing estimate in INR
   const estimatedPrice = React.useMemo(() => {
@@ -41,7 +61,7 @@ export default function CustomBuilderPage() {
     const shapeObj = shapes.find((s) => s.name === selectedShape) || shapes[0];
 
     const baseCost = settingObj.basePrice + metalObj.addedCost;
-    const diamondCost = caratWeight * 125000 * shapeObj.multiplier;
+    const diamondCost = caratWeight * diamondCostPerCarat * shapeObj.multiplier;
     return baseCost + diamondCost;
   }, [selectedShape, selectedSetting, selectedMetal, caratWeight]);
 

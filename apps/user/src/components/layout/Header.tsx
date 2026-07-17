@@ -6,10 +6,9 @@ import NextImage from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, Heart, ShoppingBag, User, Menu, X, ChevronDown, Gem } from "lucide-react";
 
-import db from "@/mocks/db.json";
 import { useApp } from "@/context/AppContext";
 import { Plus, Minus, Trash2 } from "lucide-react";
-import { MOCK_PRODUCTS } from "@/mocks/products";
+import type { Product } from "@/types/product";
 
 export function Header() {
   const { user, cart, wishlist, removeFromCart, updateCartQuantity, logout } = useApp();
@@ -18,8 +17,8 @@ export function Header() {
   const [activeMenu, setActiveMenu] = React.useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
-  const [headerData, setHeaderData] = React.useState<any>((db as any).header || {});
-  const [announcementTexts, setAnnouncementTexts] = React.useState<string[]>(db.announcements || []);
+  const [headerData, setHeaderData] = React.useState<any>({});
+  const [announcementTexts, setAnnouncementTexts] = React.useState<string[]>([]);
 
   // Interactivity States
   const [isSearchOpen, setIsSearchOpen] = React.useState(false);
@@ -27,13 +26,18 @@ export function Header() {
   const [isCartOpen, setIsCartOpen] = React.useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = React.useState(false);
 
+  const [gstRate, setGstRate] = React.useState(3);
+  const [searchProducts, setSearchProducts] = React.useState<Product[]>([]);
+
   React.useEffect(() => {
     fetch("/api/db")
       .then((res) => res.json())
       .then((data) => {
         if (data) {
-          if (data.header) setHeaderData(data.header);
-          if (data.announcements) setAnnouncementTexts(data.announcements);
+          if (data.header && Object.keys(data.header).length > 0) setHeaderData(data.header);
+          if (data.announcements && data.announcements.length > 0) setAnnouncementTexts(data.announcements);
+          if (data.officialSettings) setGstRate(data.officialSettings.gstRate ?? 3);
+          if (data.products) setSearchProducts(data.products);
         }
       })
       .catch((err) => console.error("Error loading fresh database:", err));
@@ -166,11 +170,10 @@ export function Header() {
                     aria-label="User Menu"
                   >
                     <div className="h-7 w-7 rounded-full overflow-hidden relative border border-luxury-gold/20 shrink-0">
-                      <NextImage
-                        src="/avatar.png"
+                      <img
+                        src={user.image || "/avatar.png"}
                         alt="User Profile"
-                        fill
-                        className="object-cover"
+                        className="h-full w-full object-cover"
                       />
                     </div>
                     <ChevronDown className={`h-3 w-3 stroke-[2] transition-transform duration-300 ${isUserDropdownOpen ? "rotate-180" : ""}`} />
@@ -408,7 +411,7 @@ export function Header() {
               {/* Instant Results */}
               {searchQuery.trim() !== "" && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {MOCK_PRODUCTS.filter((p) => p.name.toLowerCase().includes(searchQuery.toLowerCase())).slice(0, 4).map((p) => (
+                  {searchProducts.filter((p) => p.name.toLowerCase().includes(searchQuery.toLowerCase())).slice(0, 4).map((p) => (
                     <Link
                       key={p.id}
                       href={`/shop/${p.id}`}
@@ -437,7 +440,7 @@ export function Header() {
                       </div>
                     </Link>
                   ))}
-                  {MOCK_PRODUCTS.filter((p) => p.name.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
+                  {searchProducts.filter((p) => p.name.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
                     <p className="text-xs uppercase tracking-widest text-luxury-gray col-span-2 text-center py-8">
                       No matching creations found
                     </p>
@@ -565,13 +568,13 @@ export function Header() {
                     </span>
                   </div>
                   <div className="flex justify-between text-xs uppercase tracking-wider text-luxury-gray mb-4">
-                    <span>Est. Taxes (3% GST)</span>
+                    <span>Est. Taxes ({gstRate}% GST)</span>
                     <span>
                       {new Intl.NumberFormat("en-IN", {
                         style: "currency",
                         currency: "INR",
                         maximumFractionDigits: 0,
-                      }).format(Math.round(cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0) * 0.03))}
+                      }).format(Math.round(cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0) * (gstRate / 100)))}
                     </span>
                   </div>
                   <div className="flex justify-between font-serif text-base text-luxury-black font-semibold border-t border-luxury-gold/10 pt-4 mb-6">
@@ -583,7 +586,7 @@ export function Header() {
                         maximumFractionDigits: 0,
                       }).format(
                         cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0) +
-                        Math.round(cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0) * 0.03)
+                        Math.round(cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0) * (gstRate / 100))
                       )}
                     </span>
                   </div>

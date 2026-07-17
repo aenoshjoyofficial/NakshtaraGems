@@ -1,20 +1,30 @@
+"use client";
+
 import * as React from "react";
 import Link from "next/link";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { ArrowRight, Sparkles } from "lucide-react";
 
-import db from "@/mocks/db.json";
-
 export default function CollectionsPage() {
-  const collections = db.collections;
+  const [collections, setCollections] = React.useState<any[]>([]);
+
+  React.useEffect(() => {
+    fetch("/api/db")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.collections && data.collections.length > 0) {
+          setCollections(data.collections);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <>
       <Header />
       <main className="bg-luxury-white py-16 px-4 sm:px-6 lg:px-8 font-sans">
         <div className="max-w-7xl mx-auto">
-          {/* Header */}
           <div className="text-center max-w-3xl mx-auto mb-20">
             <span className="text-[10px] uppercase tracking-[0.35em] text-luxury-gold font-semibold block mb-3">
               Design Families
@@ -27,12 +37,11 @@ export default function CollectionsPage() {
             </p>
           </div>
 
-          {/* Grid Layout */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            {collections.map((col) => (
+            {collections.map((col: any) => (
               <div
                 key={col.name}
-                className={`border border-luxury-gold/10 p-10 flex flex-col justify-between min-h-[340px] relative transition-all duration-500 hover:border-luxury-gold ${col.bgClass}`}
+                className={`border border-luxury-gold/10 p-10 flex flex-col justify-between min-h-[340px] relative transition-all duration-500 hover:border-luxury-gold ${col.bgClass || ""}`}
               >
                 <div className="flex justify-between items-start">
                   <span className="text-[9px] uppercase tracking-widest text-luxury-gold font-bold bg-luxury-white/95 px-3 py-1 border border-luxury-gold/10">
@@ -46,12 +55,12 @@ export default function CollectionsPage() {
                     {col.name}
                   </h3>
                   <p className="text-xs text-luxury-gray leading-relaxed max-w-sm">
-                    {col.desc}
+                    {col.desc || col.description}
                   </p>
                 </div>
 
                 <Link
-                  href={col.link}
+                  href={col.link || "/shop"}
                   className="text-xs uppercase tracking-widest font-bold text-luxury-black hover:text-luxury-gold transition-colors inline-flex items-center gap-2 self-start"
                 >
                   Discover Collection <ArrowRight className="h-3.5 w-3.5" />

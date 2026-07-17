@@ -6,6 +6,23 @@ import NextImage from "next/image";
 import { ArrowRight, Mail } from "lucide-react";
 
 export function Footer() {
+  const [settings, setSettings] = React.useState<any>({
+    facebook: "https://facebook.com/nakshatragems",
+    instagram: "https://instagram.com/nakshatragems",
+    pinterest: "https://pinterest.com/nakshatragems"
+  });
+
+  React.useEffect(() => {
+    fetch("/api/db")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.officialSettings) {
+          setSettings(data.officialSettings);
+        }
+      })
+      .catch((err) => console.error("Error loading footer settings:", err));
+  }, []);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Static mockup behavior
@@ -92,9 +109,9 @@ export function Footer() {
         <div className="border-t border-luxury-charcoal pt-8 flex flex-col md:flex-row items-center justify-between text-[10px] tracking-widest text-luxury-gray uppercase">
           <p>© {new Date().getFullYear()} NAKSHTARA GEMS. ALL RIGHTS RESERVED.</p>
           <div className="flex space-x-6 mt-4 md:mt-0">
-            <span className="cursor-pointer hover:text-luxury-white transition-colors">Instagram</span>
-            <span className="cursor-pointer hover:text-luxury-white transition-colors">Pinterest</span>
-            <span className="cursor-pointer hover:text-luxury-white transition-colors">Facebook</span>
+            <a href={settings.instagram} target="_blank" rel="noopener noreferrer" className="hover:text-luxury-white transition-colors">Instagram</a>
+            <a href={settings.pinterest} target="_blank" rel="noopener noreferrer" className="hover:text-luxury-white transition-colors">Pinterest</a>
+            <a href={settings.facebook} target="_blank" rel="noopener noreferrer" className="hover:text-luxury-white transition-colors">Facebook</a>
           </div>
         </div>
       </div>

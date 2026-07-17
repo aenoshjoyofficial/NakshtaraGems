@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { Product } from "@/mocks/products";
+import { Product } from "@/types/product";
+import { useSession, signOut } from "next-auth/react";
 
 export interface CartItem {
   product: Product;
@@ -26,21 +27,26 @@ export interface Order {
 }
 
 export interface UserProfile {
+  id?: string;
   name: string;
   email: string;
+  image?: string | null;
   phone?: string;
   address?: string;
   pincode?: string;
   dob?: string;
   ringSize?: string;
   preferredMetal?: string;
+  role?: string;
 }
 
 interface AppContextType {
   user: UserProfile | null;
+  status: "loading" | "authenticated" | "unauthenticated";
   login: (name: string, email: string) => void;
   logout: () => void;
-  updateProfile: (profile: Partial<UserProfile>) => void;
+  updateProfile: (profile: Partial<UserProfile>) => Promise<boolean>;
+  refreshProfile: () => Promise<void>;
   cart: CartItem[];
   addToCart: (product: Product, quantity?: number) => { success: boolean; message: string };
   removeFromCart: (productId: string) => void;
@@ -62,11 +68,63 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [orders, setOrders] = React.useState<Order[]>([]);
   const [mounted, setMounted] = React.useState(false);
 
-  const updateProfile = (profile: Partial<UserProfile>) => {
-    setUser((prev) => {
-      if (!prev) return null;
-      return { ...prev, ...profile };
-    });
+  const { data: session, status } = useSession();
+
+  // Sync NextAuth session with local context state and fetch full profile from DB
+  React.useEffect(() => {
+    if (session?.user && status === "authenticated") {
+      const u = session.user;
+      fetch("/api/users/me")
+        .then((res) => res.json())
+        .then((data) => {
+          if (data && !data.error) {
+            setUser(data);
+          } else {
+            setUser({
+              name: u.name || "",
+              email: u.email || "",
+              image: u.image,
+            });
+          }
+        })
+        .catch(() => {
+          setUser({
+            name: u.name || "",
+            email: u.email || "",
+            image: u.image,
+          });
+        });
+    } else if (status === "unauthenticated") {
+      setUser(null);
+    }
+  }, [session, status]);
+
+  const refreshProfile = async () => {
+    try {
+      const res = await fetch("/api/users/me");
+      const data = await res.json();
+      if (data && !data.error) {
+        setUser(data);
+      }
+    } catch {}
+  };
+
+  const updateProfile = async (profile: Partial<UserProfile>): Promise<boolean> => {
+    try {
+      const res = await fetch("/api/users/me", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(profile),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setUser(data);
+        return true;
+      }
+      return false;
+    } catch {
+      return false;
+    }
   };
 
   // Persistence logic on mount
@@ -141,13 +199,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
     setCart([]);
     setWishlist([]);
+    signOut({ callbackUrl: "/" });
   };
 
   const addToCart = (product: Product, quantity = 1) => {
-    if (!user) {
-      return { success: false, message: "Only registered clients can purchase. Please sign in or register." };
-    }
-
     let success = false;
     let message = "";
 
@@ -233,6 +288,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     };
 
     setOrders((prev) => [newOrder, ...prev]);
+    
+    // Sync order with the database for admin access
+    fetch("/api/orders", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newOrder),
+    }).catch((err) => console.error("Error syncing order to database:", err));
+
     clearCart();
     return newOrder;
   };
@@ -289,9 +352,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     <AppContext.Provider
       value={{
         user,
+        status,
         login,
         logout,
         updateProfile,
+        refreshProfile,
         cart,
         addToCart,
         removeFromCart,

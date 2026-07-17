@@ -9,9 +9,45 @@ import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/Button";
 import { ArrowRight, Sparkles, Gem, ShieldCheck, Heart, Award, ArrowUpRight, Scale } from "lucide-react";
 
-import db from "@/mocks/db.json";
+const defaultData = {
+  hero: { badge: "", title: "", subtitle: "", description: "", bgImage: "" },
+  features: [],
+  featuredGems: [],
+  evaluator: { title: "Interactive GIA Diamond Evaluator", desc: "Calculate real-time valuation estimates based on grading factors.", basePrice: 5000 },
+  homepageCollections: [],
+  milestones: [],
+  editorialQuote: { text: "", author: "", title: "" },
+};
+
+function deepMerge(defaults: any, overrides: any): any {
+  const result = { ...defaults };
+  for (const key of Object.keys(overrides || {})) {
+    if (
+      overrides[key] !== null && overrides[key] !== undefined &&
+      typeof overrides[key] === "object" && !Array.isArray(overrides[key]) &&
+      typeof result[key] === "object" && !Array.isArray(result[key])
+    ) {
+      result[key] = deepMerge(result[key], overrides[key]);
+    } else if (overrides[key] !== null && overrides[key] !== undefined &&
+               !(Array.isArray(overrides[key]) && overrides[key].length === 0)) {
+      result[key] = overrides[key];
+    }
+  }
+  return result;
+}
 
 export default function Home() {
+  const [dataState, setDataState] = React.useState<any>(defaultData);
+
+  React.useEffect(() => {
+    fetch("/api/db")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data) setDataState((prev: any) => deepMerge(prev, data));
+      })
+      .catch((err) => console.error("Error loading fresh home settings:", err));
+  }, []);
+
   // Gemologist calculator state
   const [calcShape, setCalcShape] = React.useState("Round");
   const [calcCarat, setCalcCarat] = React.useState(1.0);
@@ -21,11 +57,11 @@ export default function Home() {
 
   // Recalculate price estimation
   React.useEffect(() => {
-    let basePrice = 5000; // base price in USD per carat
+    let basePrice = dataState.evaluator?.basePrice || 5000; // dynamic base price
 
     // Shape multiplier
     const shapeMultiplier = calcShape === "Round" ? 1.2 : calcShape === "Emerald" ? 0.95 : 1.05;
-    
+
     // Clarity multiplier
     const clarityFactors: Record<string, number> = { IF: 1.5, VVS1: 1.3, VVS2: 1.15, VS1: 1.0, VS2: 0.85 };
     const clarityFactor = clarityFactors[calcClarity] || 1.0;
@@ -37,29 +73,7 @@ export default function Home() {
     const estimatedUSD = basePrice * calcCarat * shapeMultiplier * clarityFactor * colorFactor;
     const estimatedINR = Math.round(estimatedUSD * 83); // 83 INR per USD
     setCalcPrice(estimatedINR);
-  }, [calcShape, calcCarat, calcClarity, calcColor]);
-
-  // Featured gemstones subset
-  const featuredGems = [
-    {
-      name: "Natural Yellow Sapphire",
-      desc: "Vibrant golden warmth of Ceylon origin.",
-      image: "/images/products/yellow-sapphire.png",
-      href: "/shop/gem-001"
-    },
-    {
-      name: "Natural Burmese Ruby",
-      desc: "Deep pigeon blood red of legendary rarity.",
-      image: "/images/products/ruby-gemstone.png",
-      href: "/shop/gem-002"
-    },
-    {
-      name: "Natural Aquamarine",
-      desc: "Icy blue transparency representing pure ocean depths.",
-      image: "/images/products/aquamarine-gemstone.png",
-      href: "/shop/gem-003"
-    }
-  ];
+  }, [calcShape, calcCarat, calcClarity, calcColor, dataState]);
 
   return (
     <>
@@ -68,9 +82,9 @@ export default function Home() {
       <main className="flex-grow">
         {/* Hero Section */}
         <section className="relative h-[90vh] min-h-[600px] flex items-center justify-center overflow-hidden bg-luxury-black text-luxury-white">
-          {(db.hero as any).bgImage ? (
+          {(dataState.hero as any).bgImage ? (
             <img
-              src={(db.hero as any).bgImage}
+              src={(dataState.hero as any).bgImage}
               alt="Hero Background"
               className="absolute inset-0 w-full h-full object-cover z-0 opacity-40 animate-fade-in"
             />
@@ -88,16 +102,16 @@ export default function Home() {
               transition={{ duration: 0.8 }}
               className="text-[10px] md:text-xs uppercase tracking-[0.4em] text-luxury-gold font-semibold mb-4"
             >
-              {(db.hero as any).badge || "The Pinnacle of Craftsmanship"}
+              {(dataState.hero as any).badge || "The Pinnacle of Craftsmanship"}
             </motion.span>
-            
+
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1, delay: 0.2 }}
               className="font-serif text-3xl sm:text-5xl md:text-7xl font-extralight tracking-wide leading-tight mb-6"
             >
-              {db.hero.title}
+              {dataState.hero.title}
             </motion.h1>
 
             <motion.p
@@ -106,7 +120,7 @@ export default function Home() {
               transition={{ duration: 1, delay: 0.4 }}
               className="max-w-2xl text-xs md:text-sm text-luxury-white/70 leading-relaxed font-sans tracking-wide mb-10"
             >
-              {db.hero.subtitle} {db.hero.description}
+              {dataState.hero.subtitle} {dataState.hero.description}
             </motion.p>
 
             <motion.div
@@ -132,27 +146,23 @@ export default function Home() {
         {/* Feature Highlights */}
         <section className="bg-luxury-ivory py-12 border-b border-luxury-gold/15">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="flex items-center gap-4 justify-center text-center md:text-left">
-              <Gem className="h-8 w-8 text-luxury-gold shrink-0 animate-pulse" />
-              <div>
-                <h3 className="font-serif text-sm tracking-wider uppercase text-luxury-black font-semibold">GIA Certified</h3>
-                <p className="text-[11px] text-luxury-gray">Every diamond is rigorously graded by the Gemological Institute of America.</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-4 justify-center text-center md:text-left">
-              <ShieldCheck className="h-8 w-8 text-luxury-gold shrink-0" />
-              <div>
-                <h3 className="font-serif text-sm tracking-wider uppercase text-luxury-black font-semibold">Insured Delivery</h3>
-                <p className="text-[11px] text-luxury-gray">Complimentary secure overnight courier shipping under transit assurance.</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-4 justify-center text-center md:text-left">
-              <Sparkles className="h-8 w-8 text-luxury-gold shrink-0" />
-              <div>
-                <h3 className="font-serif text-sm tracking-wider uppercase text-luxury-black font-semibold">Bespoke Design</h3>
-                <p className="text-[11px] text-luxury-gray">Work directly with master designers to create unique jewellery pieces.</p>
-              </div>
-            </div>
+            {(dataState.features || []).map((feat: any, idx: number) => {
+              const IconMap: Record<string, React.ComponentType<any>> = {
+                Gem: Gem,
+                ShieldCheck: ShieldCheck,
+                Sparkles: Sparkles
+              };
+              const IconComponent = IconMap[feat.icon] || Gem;
+              return (
+                <div className="flex items-center gap-4 justify-center text-center md:text-left" key={idx}>
+                  <IconComponent className="h-8 w-8 text-luxury-gold shrink-0" />
+                  <div>
+                    <h3 className="font-serif text-sm tracking-wider uppercase text-luxury-black font-semibold">{feat.title}</h3>
+                    <p className="text-[11px] text-luxury-gray">{feat.desc}</p>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </section>
 
@@ -170,7 +180,7 @@ export default function Home() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {featuredGems.map((gem, idx) => (
+              {(dataState.featuredGems || []).map((gem: any, idx: number) => (
                 <motion.div
                   key={idx}
                   initial={{ opacity: 0, y: 30 }}
@@ -180,12 +190,14 @@ export default function Home() {
                   className="group relative bg-luxury-ivory/30 border border-luxury-gold/10 hover:border-luxury-gold/25 p-8 flex flex-col justify-between transition-all duration-500 hover:shadow-lg"
                 >
                   <div className="relative aspect-square w-full bg-luxury-white/60 mb-6 overflow-hidden border border-luxury-gold/5 flex items-center justify-center">
-                    <Image
-                      src={gem.image}
-                      alt={gem.name}
-                      fill
-                      className="object-contain p-6 group-hover:scale-110 transition-transform duration-700"
-                    />
+                    {gem.image && (
+                      <Image
+                        src={gem.image}
+                        alt={gem.name}
+                        fill
+                        className="object-contain p-6 group-hover:scale-110 transition-transform duration-700"
+                      />
+                    )}
                   </div>
                   <div>
                     <h3 className="font-serif text-xl text-luxury-black font-light mb-2">{gem.name}</h3>
@@ -213,10 +225,10 @@ export default function Home() {
                   Atelier Valuation
                 </span>
                 <h2 className="font-serif text-3xl md:text-4xl font-light tracking-wide text-luxury-black mb-6">
-                  Interactive GIA Diamond Evaluator
+                  {dataState.evaluator?.title || "Interactive GIA Diamond Evaluator"}
                 </h2>
                 <p className="text-xs text-luxury-gray leading-relaxed mb-6">
-                  Calculate real-time valuation estimates based on grading factors. Enter your desired specifications below to get estimated pricing values updated immediately.
+                  {dataState.evaluator?.desc || "Calculate real-time valuation estimates based on grading factors. Enter your desired specifications below to get estimated pricing values updated immediately."}
                 </p>
                 <div className="flex items-center gap-3 text-[10px] uppercase tracking-wider text-luxury-black font-bold">
                   <Award className="h-5 w-5 text-luxury-gold" /> GIA Grading Criteria Integrated
@@ -320,62 +332,35 @@ export default function Home() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {/* Category Card 1 */}
-              <div className="group relative h-[450px] overflow-hidden bg-luxury-charcoal border border-luxury-gold/10">
-                <Image
-                  src="/images/collections/rings.png"
-                  alt="Engagement Rings"
-                  fill
-                  className="object-cover opacity-60 group-hover:scale-105 transition-transform duration-[1200ms] ease-out"
-                  sizes="(max-width: 768px) 100vw, 33vw"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-luxury-black via-luxury-black/40 to-transparent opacity-90" />
-                <div className="absolute inset-0 flex flex-col justify-end p-8 z-10">
-                  <span className="text-[9px] tracking-widest uppercase text-luxury-gold block mb-1 font-bold">Brilliant & Certified</span>
-                  <h3 className="font-serif text-2xl text-luxury-white font-light mb-4">Engagement Rings</h3>
-                  <Link href="/shop?category=jewellery" className="text-xs uppercase tracking-widest text-luxury-gold-light hover:text-luxury-white transition-colors inline-flex items-center gap-2">
-                    Explore rings <ArrowRight className="h-3 w-3" />
-                  </Link>
-                </div>
-              </div>
-
-              {/* Category Card 2 */}
-              <div className="group relative h-[450px] overflow-hidden bg-luxury-charcoal border border-luxury-gold/10">
-                <Image
-                  src="/images/collections/diamonds.png"
-                  alt="Loose Diamonds"
-                  fill
-                  className="object-cover opacity-60 group-hover:scale-105 transition-transform duration-[1200ms] ease-out"
-                  sizes="(max-width: 768px) 100vw, 33vw"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-luxury-black via-luxury-black/40 to-transparent opacity-90" />
-                <div className="absolute inset-0 flex flex-col justify-end p-8 z-10">
-                  <span className="text-[9px] tracking-widest uppercase text-luxury-gold block mb-1 font-bold">Pure Purity</span>
-                  <h3 className="font-serif text-2xl text-luxury-white font-light mb-4">Loose Diamonds</h3>
-                  <Link href="/shop?category=diamond" className="text-xs uppercase tracking-widest text-luxury-gold-light hover:text-luxury-white transition-colors inline-flex items-center gap-2">
-                    View shapes <ArrowRight className="h-3 w-3" />
-                  </Link>
-                </div>
-              </div>
-
-              {/* Category Card 3 */}
-              <div className="group relative h-[450px] overflow-hidden bg-luxury-charcoal border border-luxury-gold/10 md:col-span-2 lg:col-span-1">
-                <Image
-                  src="/images/collections/jewellery.png"
-                  alt="Fine Jewellery"
-                  fill
-                  className="object-cover opacity-60 group-hover:scale-105 transition-transform duration-[1200ms] ease-out"
-                  sizes="(max-width: 768px) 100vw, 33vw"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-luxury-black via-luxury-black/40 to-transparent opacity-90" />
-                <div className="absolute inset-0 flex flex-col justify-end p-8 z-10">
-                  <span className="text-[9px] tracking-widest uppercase text-luxury-gold block mb-1 font-bold">Modern Luxury</span>
-                  <h3 className="font-serif text-2xl text-luxury-white font-light mb-4">Fine Jewellery</h3>
-                  <Link href="/shop?category=jewellery" className="text-xs uppercase tracking-widest text-luxury-gold-light hover:text-luxury-white transition-colors inline-flex items-center gap-2">
-                    Shop designs <ArrowRight className="h-3 w-3" />
-                  </Link>
-                </div>
-              </div>
+              {(dataState.homepageCollections || []).map((col: any, idx: number) => {
+                const fallbackImages = [
+                  "/images/collections/rings.png",
+                  "/images/collections/diamonds.png",
+                  "/images/collections/jewellery.png"
+                ];
+                const imageSrc = col.image || fallbackImages[idx % 3];
+                return (
+                  <div key={idx} className="group relative h-[450px] overflow-hidden bg-luxury-charcoal border border-luxury-gold/10">
+                    <Image
+                      src={imageSrc}
+                      alt={col.title || "Collection"}
+                      fill
+                      className="object-cover opacity-60 group-hover:scale-105 transition-transform duration-[1200ms] ease-out"
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-luxury-black via-luxury-black/40 to-transparent opacity-90" />
+                    <div className="absolute inset-0 flex flex-col justify-end p-8 z-10">
+                      <span className="text-[9px] tracking-widest uppercase text-luxury-gold block mb-1 font-bold">
+                        {col.badge || "Curated Design"}
+                      </span>
+                      <h3 className="font-serif text-2xl text-luxury-white font-light mb-4">{col.title}</h3>
+                      <Link href={col.link || "/shop"} className="text-xs uppercase tracking-widest text-luxury-gold-light hover:text-luxury-white transition-colors inline-flex items-center gap-2">
+                        Explore Collection <ArrowRight className="h-3 w-3" />
+                      </Link>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </section>
@@ -390,12 +375,7 @@ export default function Home() {
             </div>
 
             <div className="space-y-12">
-              {[
-                { year: "1998", title: "Atelier Beginnings", desc: "Nakshtara was established in Mumbai as an exclusive custom diamond grading atelier servicing boutique royal houses." },
-                { year: "2005", title: "Bespoke Showroom Launch", desc: "Opened our flagship virtual showroom portal, introducing fine solitaire settings with worldwide secure delivery." },
-                { year: "2015", title: "Conflict-Free Certification", desc: "Pledged 100% adherence to the Kimberley Process, securing directly sourced diamonds under GIA trust certification." },
-                { year: "Today", title: "Timeless Celestial Beauty", desc: "Continuing to craft pristine jewellery designs for clients worldwide, ensuring every creation shines for generations." }
-              ].map((milestone, idx) => (
+              {(dataState.milestones || []).map((milestone: any, idx: number) => (
                 <motion.div
                   key={idx}
                   initial={{ opacity: 0, x: idx % 2 === 0 ? -30 : 30 }}
@@ -421,10 +401,10 @@ export default function Home() {
           <div className="max-w-3xl mx-auto">
             <Gem className="h-6 w-6 text-luxury-gold mx-auto mb-6 opacity-60 animate-pulse" />
             <blockquote className="font-serif text-2xl md:text-3xl italic tracking-wide text-luxury-black font-light leading-relaxed mb-8">
-              &ldquo;True elegance is not about standing out, but about being remembered. Every diamond we cut and set is designed to carry a story through generations.&rdquo;
+              &ldquo;{dataState.editorialQuote?.text || "True elegance is not about standing out, but about being remembered. Every diamond we cut and set is designed to carry a story through generations."}&rdquo;
             </blockquote>
             <cite className="text-[10px] uppercase tracking-[0.25em] text-luxury-gray font-semibold not-italic">
-              — Aravind Swamy, Chief Designer
+              — {dataState.editorialQuote?.author || "Aravind Swamy"}, {dataState.editorialQuote?.title || "Chief Designer"}
             </cite>
           </div>
         </section>

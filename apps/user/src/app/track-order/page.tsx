@@ -16,25 +16,41 @@ function TrackOrderContent() {
 
   const [searchId, setSearchId] = React.useState(initialId);
   const [activeOrder, setActiveOrder] = React.useState<any>(null);
+  const [loading, setLoading] = React.useState(false);
+
+  const fetchLiveOrder = React.useCallback((id: string) => {
+    setLoading(true);
+    fetch(`/api/orders?id=${id}`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Order not found");
+        return res.json();
+      })
+      .then((data) => {
+        setActiveOrder(data);
+      })
+      .catch(() => {
+        const localOrder = orders.find((o) => o.id.toUpperCase() === id.toUpperCase());
+        if (localOrder) {
+          setActiveOrder(localOrder);
+        } else {
+          setActiveOrder(null);
+        }
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [orders]);
 
   React.useEffect(() => {
     if (initialId) {
-      const order = orders.find((o) => o.id === initialId);
-      if (order) {
-        setActiveOrder(order);
-      }
+      fetchLiveOrder(initialId);
     }
-  }, [initialId, orders]);
+  }, [initialId, fetchLiveOrder]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    const order = orders.find((o) => o.id.toUpperCase() === searchId.trim().toUpperCase());
-    if (order) {
-      setActiveOrder(order);
-    } else {
-      setActiveOrder(null);
-      alert("Order ID not found in current session database.");
-    }
+    if (!searchId.trim()) return;
+    fetchLiveOrder(searchId.trim());
   };
 
   // Helper to check step completion status

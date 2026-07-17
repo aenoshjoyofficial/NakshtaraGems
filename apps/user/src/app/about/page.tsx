@@ -1,10 +1,58 @@
+"use client";
+
 import * as React from "react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { ShieldAlert, BookOpen, Compass, Award } from "lucide-react";
-import db from "@/mocks/db.json";
 
 export default function HeritagePage() {
+  const [dataState, setDataState] = React.useState<any>(null);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    fetch("/api/db")
+      .then((res) => res.json())
+      .then((data) => {
+        setDataState(data);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
+  if (loading || !dataState) {
+    return (
+      <div className="min-h-screen bg-luxury-white flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-luxury-gold" />
+      </div>
+    );
+  }
+
+  const about = dataState.about || {};
+  const promisesList = about.promises || [
+    {
+      title: "100% GIA Certification",
+      desc: "Every center diamond above 0.3 carats sold by Nakshtara comes certified directly by the Gemological Institute of America (GIA), ensuring complete specification accuracy.",
+      icon: "BookOpen"
+    },
+    {
+      title: "Conflict-Free Sourcing",
+      desc: "We adhere strictly to the Kimberley Process, sourcing our raw diamonds exclusively from regions that are certified conflict-free and environmentally sustainable.",
+      icon: "ShieldAlert"
+    },
+    {
+      title: "Lifetime Care Warranty",
+      desc: "We offer complimentary lifetime professional cleaning, prong tightening, and structural inspections for every jewelry piece purchased from our showroom.",
+      icon: "Award"
+    }
+  ];
+
+  const IconMap: Record<string, React.ComponentType<any>> = {
+    BookOpen: BookOpen,
+    ShieldAlert: ShieldAlert,
+    Award: Award,
+    Compass: Compass
+  };
+
   return (
     <>
       <Header />
@@ -16,10 +64,10 @@ export default function HeritagePage() {
               The Maison
             </span>
             <h1 className="font-serif text-4xl sm:text-6xl font-light tracking-wide text-luxury-black mb-6">
-              {db.about.title}
+              {about.title}
             </h1>
             <p className="text-sm text-luxury-gray leading-relaxed">
-              {db.about.description}
+              {about.description}
             </p>
           </div>
 
@@ -32,14 +80,14 @@ export default function HeritagePage() {
               </h2>
               <div className="space-y-4 text-xs text-luxury-gray leading-relaxed">
                 <p>
-                  {db.about.origins}
+                  {about.origins}
                 </p>
               </div>
             </div>
             <div className="bg-luxury-ivory p-12 text-center border border-luxury-gold/10">
               <Compass className="h-12 w-12 text-luxury-gold/50 mx-auto mb-6" />
               <p className="font-serif text-lg italic text-luxury-black mb-4">
-                "{db.about.quote}"
+                "{about.quote}"
               </p>
               <span className="text-[9px] uppercase tracking-widest text-luxury-gold font-semibold">— Founder, Nakshtara Gems</span>
             </div>
@@ -48,34 +96,27 @@ export default function HeritagePage() {
           {/* Brand Values / Ethical Commitments */}
           <div>
             <div className="text-center mb-16">
-              <span className="text-[10px] uppercase tracking-widest text-luxury-gold font-bold block mb-2">Ethical Standards</span>
-              <h2 className="font-serif text-3xl font-light text-luxury-black">Our Three Promises</h2>
+              <span className="text-[10px] uppercase tracking-widest text-luxury-gold font-bold block mb-2">
+                {about.promisesSubtitle || "Ethical Standards"}
+              </span>
+              <h2 className="font-serif text-3xl font-light text-luxury-black">
+                {about.promisesTitle || "Our Three Promises"}
+              </h2>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-              <div className="border border-luxury-gold/10 p-8 text-center hover:border-luxury-gold transition-colors duration-500">
-                <BookOpen className="h-8 w-8 text-luxury-gold/60 mx-auto mb-6" />
-                <h3 className="font-serif text-lg text-luxury-black font-medium mb-3">100% GIA Certification</h3>
-                <p className="text-xs text-luxury-gray leading-relaxed">
-                  Every center diamond above 0.3 carats sold by Nakshtara comes certified directly by the Gemological Institute of America (GIA), ensuring complete specification accuracy.
-                </p>
-              </div>
-
-              <div className="border border-luxury-gold/10 p-8 text-center hover:border-luxury-gold transition-colors duration-500">
-                <ShieldAlert className="h-8 w-8 text-luxury-gold/60 mx-auto mb-6" />
-                <h3 className="font-serif text-lg text-luxury-black font-medium mb-3">Conflict-Free Sourcing</h3>
-                <p className="text-xs text-luxury-gray leading-relaxed">
-                  We adhere strictly to the Kimberley Process, sourcing our raw diamonds exclusively from regions that are certified conflict-free and environmentally sustainable.
-                </p>
-              </div>
-
-              <div className="border border-luxury-gold/10 p-8 text-center hover:border-luxury-gold transition-colors duration-500">
-                <Award className="h-8 w-8 text-luxury-gold/60 mx-auto mb-6" />
-                <h3 className="font-serif text-lg text-luxury-black font-medium mb-3">Lifetime Care Warranty</h3>
-                <p className="text-xs text-luxury-gray leading-relaxed">
-                  We offer complimentary lifetime professional cleaning, prong tightening, and structural inspections for every jewelry piece purchased from our showroom.
-                </p>
-              </div>
+              {promisesList.map((promise: any, idx: number) => {
+                const IconComponent = IconMap[promise.icon] || BookOpen;
+                return (
+                  <div className="border border-luxury-gold/10 p-8 text-center hover:border-luxury-gold transition-colors duration-500" key={idx}>
+                    <IconComponent className="h-8 w-8 text-luxury-gold/60 mx-auto mb-6" />
+                    <h3 className="font-serif text-lg text-luxury-black font-medium mb-3">{promise.title}</h3>
+                    <p className="text-xs text-luxury-gray leading-relaxed">
+                      {promise.desc}
+                    </p>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>

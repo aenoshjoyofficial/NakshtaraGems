@@ -7,13 +7,15 @@ import { Footer } from "@/components/layout/Footer";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
 import { Mail, Lock, User, Eye, EyeOff, Sparkles } from "lucide-react";
+import { signIn } from "next-auth/react";
 
 export default function LoginPage() {
-  const { user, login: contextLogin } = useApp();
+  const { user } = useApp();
   const router = useRouter();
   const [activeTab, setActiveTab] = React.useState<"signin" | "signup">("signin");
   const [showPassword, setShowPassword] = React.useState(false);
   const [successMsg, setSuccessMsg] = React.useState("");
+  const [errorMsg, setErrorMsg] = React.useState("");
 
   const [formData, setFormData] = React.useState({
     name: "",
@@ -21,20 +23,61 @@ export default function LoginPage() {
     password: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMsg("");
+    setSuccessMsg("");
+
     if (activeTab === "signin") {
-      contextLogin(formData.email.split("@")[0].toUpperCase(), formData.email);
-      setSuccessMsg("Welcome back to Nakshtara Gems. Accessing client vault...");
+      const res = await signIn("credentials", {
+        redirect: false,
+        email: formData.email,
+        password: formData.password,
+      });
+
+      if (res?.error) {
+        setErrorMsg("Invalid credentials. Please verify your client key/password.");
+      } else {
+        setSuccessMsg("Welcome back to Nakshtara Gems. Accessing client vault...");
+        setTimeout(() => {
+          router.push("/");
+        }, 1500);
+      }
     } else {
-      contextLogin(formData.name, formData.email);
-      setSuccessMsg("Account successfully registered to the Maison. Welcome!");
+      try {
+        const response = await fetch("/api/users", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: formData.name,
+            email: formData.email,
+            password: formData.password,
+          })
+        });
+
+        const data = await response.json();
+        if (!response.ok || !data.success) {
+          setErrorMsg(data.error || "Failed to register account.");
+          return;
+        }
+
+        setSuccessMsg("Account successfully registered to the Maison. Welcome!");
+
+        // Auto login
+        await signIn("credentials", {
+          redirect: false,
+          email: formData.email,
+          password: formData.password,
+        });
+
+        setTimeout(() => {
+          router.push("/");
+        }, 1500);
+      } catch (err) {
+        console.error("Error registering user:", err);
+        setErrorMsg("Error registering user to database.");
+      }
     }
-    
-    // Immediate redirect to homepage
-    setTimeout(() => {
-      router.push("/");
-    }, 1500);
   };
 
   return (
@@ -163,15 +206,21 @@ export default function LoginPage() {
                 </div>
 
                 {activeTab === "signin" && (
-                  <div className="text-right">
-                    <button
-                      type="button"
-                      className="text-[9px] uppercase tracking-widest text-luxury-gray hover:text-luxury-gold transition-colors font-bold"
-                    >
-                      Forgot Password?
-                    </button>
-                  </div>
-                )}
+                   <div className="text-right">
+                     <button
+                       type="button"
+                       className="text-[9px] uppercase tracking-widest text-luxury-gray hover:text-luxury-gold transition-colors font-bold"
+                     >
+                       Forgot Password?
+                     </button>
+                   </div>
+                 )}
+
+                 {errorMsg && (
+                   <div className="text-xs text-red-600 bg-red-50/50 border border-red-200/50 p-3 text-center uppercase tracking-wider font-semibold">
+                     {errorMsg}
+                   </div>
+                 )}
 
                 <button
                   type="submit"

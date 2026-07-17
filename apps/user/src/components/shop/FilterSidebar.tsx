@@ -17,12 +17,16 @@ interface FilterSidebarProps {
   filters: FilterState;
   onChange: (filters: FilterState) => void;
   onReset: () => void;
+  products?: { price: number; carat?: number }[];
 }
 
-export function FilterSidebar({ filters, onChange, onReset }: FilterSidebarProps) {
+export function FilterSidebar({ filters, onChange, onReset, products = [] }: FilterSidebarProps) {
   const shapes = ["Round", "Oval", "Emerald", "Pear", "Princess"];
   const metals = ["Platinum", "18k White Gold", "18k Yellow Gold", "18k Rose Gold"];
   const cuts = ["Ideal", "Excellent", "Very Good"];
+
+  const maxPrice = products.length > 0 ? Math.ceil(Math.max(...products.map(p => p.price)) / 1000) * 1000 : 75000;
+  const maxCarat = products.length > 0 ? Math.ceil(Math.max(...products.filter(p => p.carat).map(p => p.carat || 0)) * 10) / 10 : 5.0;
 
   const toggleShape = (shape: string) => {
     const nextShapes = filters.shape.includes(shape)
@@ -116,7 +120,7 @@ export function FilterSidebar({ filters, onChange, onReset }: FilterSidebarProps
           <input
             type="range"
             min="1000"
-            max="75000"
+            max={maxPrice}
             step="1000"
             value={filters.priceMax}
             onChange={(e) => onChange({ ...filters, priceMax: parseInt(e.target.value) })}
@@ -132,7 +136,7 @@ export function FilterSidebar({ filters, onChange, onReset }: FilterSidebarProps
               <input
                 type="number"
                 min="0.5"
-                max="5"
+                max={maxCarat}
                 step="0.1"
                 value={filters.caratMin}
                 onChange={(e) => onChange({ ...filters, caratMin: parseFloat(e.target.value) })}
@@ -142,7 +146,7 @@ export function FilterSidebar({ filters, onChange, onReset }: FilterSidebarProps
               <input
                 type="number"
                 min="0.5"
-                max="5"
+                max={maxCarat}
                 step="0.1"
                 value={filters.caratMax}
                 onChange={(e) => onChange({ ...filters, caratMax: parseFloat(e.target.value) })}

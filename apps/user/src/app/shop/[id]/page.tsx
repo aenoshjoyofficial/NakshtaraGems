@@ -5,9 +5,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { MOCK_PRODUCTS, Product } from "@/mocks/products";
+import type { Product } from "@/types/product";
 import { useApp } from "@/context/AppContext";
-import { ArrowLeft, Shield, Truck, Sparkles, PhoneCall, Heart } from "lucide-react";
+import { ArrowLeft, Shield, Truck, Sparkles, PhoneCall, Heart, ChevronLeft, ChevronRight, Play, X, ZoomIn } from "lucide-react";
+import { ProductCard } from "@/components/shop/ProductCard";
 
 export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = React.use(params);
@@ -16,12 +17,61 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const [quantity, setQuantity] = React.useState(1);
   const isWishlisted = product ? wishlist.includes(product.id) : false;
 
+  const [products, setProducts] = React.useState<Product[]>([]);
+
+  // Gallery state
+  const [activeIndex, setActiveIndex] = React.useState(0);
+  const [showVideo, setShowVideo] = React.useState(false);
+  const [zoomOpen, setZoomOpen] = React.useState(false);
+
   React.useEffect(() => {
-    const found = MOCK_PRODUCTS.find((p) => p.id === id);
+    fetch("/api/db")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.products) {
+          setProducts(data.products);
+        }
+      })
+      .catch((err) => console.error("Error loading fresh catalog:", err));
+  }, []);
+
+  React.useEffect(() => {
+    const found = products.find((p) => p.id === id);
     if (found) {
       setProduct(found);
+      setActiveIndex(0);
+      setShowVideo(false);
     }
-  }, [id]);
+  }, [id, products]);
+
+  const similarProducts = React.useMemo(() => {
+    if (!product) return [];
+    return products
+      .filter((p) => p.category === product.category && p.id !== product.id && !p.draft)
+      .slice(0, 4);
+  }, [product, products]);
+
+  // Build gallery items: only uploaded images + optional video
+  const galleryImages = React.useMemo(() => {
+    if (!product) return [];
+    const imgs: string[] = [];
+    if (product.image) imgs.push(product.image);
+    if (product.images && Array.isArray(product.images)) {
+      for (const img of product.images) {
+        if (img && typeof img === "string" && img.trim() !== "" && !imgs.includes(img)) {
+          imgs.push(img);
+        }
+      }
+    }
+    return imgs;
+  }, [product]);
+
+  const hasVideo = React.useMemo(() => {
+    return !!(product?.video && typeof product.video === "string" && product.video.trim() !== "");
+  }, [product]);
+
+  // Total gallery items: images + 1 video slot (if video exists)
+  const totalSlots = galleryImages.length + (hasVideo ? 1 : 0);
 
   const formatPrice = (amount: number) => {
     return new Intl.NumberFormat("en-IN", {
@@ -31,7 +81,6 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     }).format(amount);
   };
 
-  // Category label
   const getCategoryLabel = () => {
     if (!product) return "";
     if (product.category === "diamond") return "Loose Diamond";
@@ -70,32 +119,125 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
           </Link>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-            {/* Image Preview Block */}
-            <div className="bg-luxury-ivory/40 border border-luxury-gold/10 p-8 flex flex-col items-center justify-center min-h-[450px] relative overflow-hidden">
-              <Sparkles className="absolute top-6 left-6 h-6 w-6 text-luxury-gold/40 animate-pulse z-10" />
-
-              {/* Category Badge */}
-              <span className="absolute top-6 right-6 text-[9px] tracking-widest uppercase text-luxury-white bg-luxury-black/70 backdrop-blur-sm font-semibold px-3 py-1.5 z-10">
-                {getCategoryLabel()}
-              </span>
-
-              {/* Actual Product Image */}
-              <div className="relative w-full h-full min-h-[350px]">
-                <Image
-                  src={product.image}
-                  alt={product.name}
-                  fill
-                  className="object-contain p-4"
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  priority
-                />
-              </div>
-
-              {!product.inStock && (
-                <span className="absolute bottom-6 right-6 bg-luxury-ruby text-luxury-white text-[9px] uppercase tracking-widest font-semibold px-3 py-1.5 z-10">
-                  Bespoke Order Only
-                </span>
+            {/* Gallery Section */}
+            <div className="flex flex-col-reverse sm:flex-row gap-4">
+              {/* Thumbnails */}
+              {totalSlots > 1 && (
+                <div className="flex sm:flex-col gap-2 sm:w-20 overflow-x-auto sm:overflow-y-auto sm:max-h-[500px] shrink-0">
+                  {galleryImages.map((img, idx) => (
+                    <button
+                      key={`img-${idx}`}
+                      onClick={() => { setActiveIndex(idx); setShowVideo(false); }}
+                      className={`relative w-16 h-16 sm:w-20 sm:h-20 shrink-0 border-2 transition-all cursor-pointer overflow-hidden ${
+                        !showVideo && activeIndex === idx
+                          ? "border-luxury-gold"
+                          : "border-luxury-gold/10 hover:border-luxury-gold/40"
+                      }`}
+                    >
+                      <Image
+                        src={img}
+                        alt={`${product.name} thumbnail ${idx + 1}`}
+                        fill
+                        className="object-contain p-1"
+                        sizes="80px"
+                      />
+                    </button>
+                  ))}
+                  {hasVideo && (
+                    <button
+                      onClick={() => setShowVideo(true)}
+                      className={`relative w-16 h-16 sm:w-20 sm:h-20 shrink-0 border-2 transition-all cursor-pointer overflow-hidden ${
+                        showVideo
+                          ? "border-luxury-gold"
+                          : "border-luxury-gold/10 hover:border-luxury-gold/40"
+                      }`}
+                    >
+                      <div className="absolute inset-0 bg-luxury-black/80 flex items-center justify-center">
+                        <Play className="h-5 w-5 text-luxury-gold" />
+                      </div>
+                      <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 text-[7px] text-luxury-white font-bold uppercase">
+                        Video
+                      </span>
+                    </button>
+                  )}
+                </div>
               )}
+
+              {/* Main Display */}
+              <div className="relative flex-1 bg-luxury-ivory/40 border border-luxury-gold/10 min-h-[400px] sm:min-h-[500px] overflow-hidden group">
+                <Sparkles className="absolute top-4 left-4 h-5 w-5 text-luxury-gold/40 animate-pulse z-10" />
+                <span className="absolute top-4 right-4 text-[9px] tracking-widest uppercase text-luxury-white bg-luxury-black/70 backdrop-blur-sm font-semibold px-3 py-1.5 z-10">
+                  {getCategoryLabel()}
+                </span>
+
+                {!product.inStock && (
+                  <span className="absolute bottom-4 right-4 bg-luxury-ruby text-luxury-white text-[9px] uppercase tracking-widest font-semibold px-3 py-1.5 z-10">
+                    Bespoke Order Only
+                  </span>
+                )}
+
+                {/* Navigation arrows (only if multiple images and not showing video) */}
+                {!showVideo && galleryImages.length > 1 && (
+                  <>
+                    <button
+                      onClick={() => setActiveIndex((prev) => (prev === 0 ? galleryImages.length - 1 : prev - 1))}
+                      className="absolute left-3 top-1/2 -translate-y-1/2 z-20 bg-luxury-white/80 hover:bg-luxury-white border border-luxury-gold/20 p-2 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                      aria-label="Previous image"
+                    >
+                      <ChevronLeft className="h-5 w-5 text-luxury-black" />
+                    </button>
+                    <button
+                      onClick={() => setActiveIndex((prev) => (prev === galleryImages.length - 1 ? 0 : prev + 1))}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 z-20 bg-luxury-white/80 hover:bg-luxury-white border border-luxury-gold/20 p-2 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                      aria-label="Next image"
+                    >
+                      <ChevronRight className="h-5 w-5 text-luxury-black" />
+                    </button>
+                  </>
+                )}
+
+                {/* Zoom button */}
+                {!showVideo && (
+                  <button
+                    onClick={() => setZoomOpen(true)}
+                    className="absolute bottom-4 left-4 z-20 bg-luxury-white/80 hover:bg-luxury-white border border-luxury-gold/20 p-2 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                    aria-label="Zoom image"
+                  >
+                    <ZoomIn className="h-4 w-4 text-luxury-black" />
+                  </button>
+                )}
+
+                {showVideo && hasVideo ? (
+                  <div className="w-full h-full flex items-center justify-center p-4">
+                    <video
+                      src={product.video!}
+                      controls
+                      autoPlay
+                      className="max-w-full max-h-[450px] object-contain"
+                    >
+                      Your browser does not support video playback.
+                    </video>
+                  </div>
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center p-6 relative">
+                    <Image
+                      src={galleryImages[activeIndex] || product.image}
+                      alt={`${product.name} - Image ${activeIndex + 1}`}
+                      fill
+                      className="object-contain p-6"
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                      priority
+                    />
+                  </div>
+                )}
+
+                {/* Image counter */}
+                {!showVideo && galleryImages.length > 1 && (
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 bg-luxury-black/60 backdrop-blur-sm text-luxury-white text-[9px] uppercase tracking-widest font-bold px-3 py-1.5">
+                    {activeIndex + 1} / {galleryImages.length}
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Specifications Details */}
@@ -118,7 +260,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 </div>
 
                 <p className="text-xs text-luxury-gray leading-relaxed mb-8 border-b border-luxury-gold/10 pb-6">
-                  Hand-selected for its pristine characteristics and curated by our master in-house gemologists. Each piece comes certified with a lifetime authenticity warranty and complimentary premium presentation packaging.
+                  {product.description || "Hand-selected for its pristine characteristics and curated by our master in-house gemologists. Each piece comes certified with a lifetime authenticity warranty and complimentary premium presentation packaging."}
                 </p>
 
                 {/* Dynamic specs based on product type */}
@@ -189,7 +331,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                         </div>
                         <div className="border border-luxury-gold/5 bg-luxury-ivory/20 p-3 col-span-2">
                           <span className="text-[9px] uppercase text-luxury-gray block mb-1">Purity Certification</span>
-                          <span className="text-xs font-semibold text-luxury-black font-sans">BIS Hallmark Certified Gold</span>
+                          <span className="text-xs font-semibold text-luxury-black font-sans">{product.certificate || "BIS Hallmark"} Certified Gold</span>
                         </div>
                       </>
                     )}
@@ -252,8 +394,53 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               </div>
             </div>
           </div>
+
+          {/* Similar Products Section */}
+          {similarProducts.length > 0 && (
+            <div className="mt-20 pt-16 border-t border-luxury-gold/10">
+              <div className="text-center mb-12">
+                <span className="text-[10px] uppercase tracking-[0.35em] text-luxury-gold font-semibold block mb-2">
+                  Curated Suggestions
+                </span>
+                <h2 className="font-serif text-2xl sm:text-3xl font-light tracking-wide text-luxury-black">
+                  Similar Creations
+                </h2>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                {similarProducts.map((p) => (
+                  <ProductCard key={p.id} product={p} />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </main>
+
+      {/* Full-Screen Zoom Modal */}
+      {zoomOpen && (
+        <div
+          className="fixed inset-0 z-[200] bg-luxury-black/90 backdrop-blur-sm flex items-center justify-center cursor-pointer"
+          onClick={() => setZoomOpen(false)}
+        >
+          <button
+            onClick={() => setZoomOpen(false)}
+            className="absolute top-6 right-6 text-luxury-white hover:text-luxury-gold transition-colors z-10 cursor-pointer"
+          >
+            <X className="h-8 w-8" />
+          </button>
+          <div className="relative w-[90vw] h-[90vh] max-w-5xl">
+            <Image
+              src={galleryImages[activeIndex] || product.image}
+              alt={`${product.name} - Zoomed`}
+              fill
+              className="object-contain"
+              sizes="90vw"
+              priority
+            />
+          </div>
+        </div>
+      )}
+
       <Footer />
     </>
   );

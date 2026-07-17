@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { Heart, ArrowRight } from "lucide-react";
-import { Product } from "@/mocks/products";
+import { Product } from "@/types/product";
 import { useApp } from "@/context/AppContext";
 
 interface ProductCardProps {

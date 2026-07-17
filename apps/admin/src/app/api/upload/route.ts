@@ -1,40 +1,84 @@
 import { NextResponse } from "next/server";
 import fs from "fs/promises";
 import path from "path";
+import { getToken } from "next-auth/jwt";
 
 export async function POST(request: Request) {
   try {
+    const token = await getToken({ req: request as any, secret: process.env.AUTH_SECRET });
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
-    const folder = (formData.get("folder") as string) || "";
 
     if (!file) {
       return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
     }
 
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
+    // Try Cloudinary upload if configured (and not dummy placeholder)
+    const cloudinaryUrl = process.env.CLOUDINARY_URL || "";
+    if (cloudinaryUrl && !cloudinaryUrl.includes("dummy_cloud")) {
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        const base64File = `data:${file.type};base64,${buffer.toString("base64")}`;
 
-    // Generate a unique filename using timestamp
-    const ext = path.extname(file.name) || ".jpg";
-    const timestamp = Date.now();
-    const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_").replace(ext, "");
-    const filename = `${safeName}-${timestamp}${ext}`;
+        // Extract cloud name, api key, and secret from CLOUDINARY_URL
+        // URL format: cloudinary://api_key:api_secret@cloud_name
+        const match = cloudinaryUrl.match(/cloudinary:\/\/([^:]+):([^@]+)@(.+)/);
+        if (match) {
+          const [, apiKey, apiSecret, cloudName] = match;
+          const timestamp = Math.round(new Date().getTime() / 1000).toString();
+          
+          // Generate signature
+          const crypto = await import("crypto");
+          const signature = crypto
+            .createHash("sha1")
+            .update(`timestamp=${timestamp}${apiSecret}`)
+            .digest("hex");
 
-    // Target upload folder in the storefront project: apps/user/public/uploads/<folder>
-    const uploadDir = path.join(process.cwd(), "../user/public/uploads", folder);
-    
-    // Ensure directory exists
-    await fs.mkdir(uploadDir, { recursive: true });
+          const uploadFormData = new FormData();
+          uploadFormData.append("file", base64File);
+          uploadFormData.append("api_key", apiKey);
+          uploadFormData.append("timestamp", timestamp);
+          uploadFormData.append("signature", signature);
 
-    const filePath = path.join(uploadDir, filename);
-    await fs.writeFile(filePath, buffer);
+          const cloudinaryRes = await fetch(
+            `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+            {
+              method: "POST",
+              body: uploadFormData,
+            }
+          );
 
-    // Return the relative URL path for the storefront to load
-    const url = `/uploads/${folder ? folder + "/" : ""}${filename}`;
+          if (cloudinaryRes.ok) {
+            const data = await cloudinaryRes.json();
+            return NextResponse.json({ success: true, url: data.secure_url });
+          }
+        }
+      } catch (cloudinaryError) {
+        console.warn("Cloudinary upload failed, falling back to local storage:", cloudinaryError);
+      }
+    }
 
-    return NextResponse.json({ success: true, url, filename });
+    // Fallback: Save locally to apps/user/public/uploads/
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    const uploadsDir = path.join(process.cwd(), "../user/public/uploads");
+    await fs.mkdir(uploadsDir, { recursive: true });
+
+    const fileExtension = path.extname(file.name) || ".png";
+    const filename = `${Date.now()}_${Math.floor(Math.random() * 1000)}${fileExtension}`;
+    const filepath = path.join(uploadsDir, filename);
+
+    await fs.writeFile(filepath, buffer);
+
+    return NextResponse.json({ success: true, url: `/uploads/${filename}` });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("Upload error:", error);
+    return NextResponse.json({ error: error.message || "Failed to upload image" }, { status: 500 });
   }
 }

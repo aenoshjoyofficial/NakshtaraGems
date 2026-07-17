@@ -1,0 +1,155 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id             String    @id @default(uuid())
+  email          String    @unique
+  name           String
+  password       String
+  role           String    @default("user")
+  image          String?
+  phone          String    @default("")
+  address        String    @default("")
+  pincode        String    @default("")
+  dob            String    @default("")
+  ringSize       String    @default("")
+  preferredMetal String    @default("Platinum")
+  emailVerified  DateTime?
+  accounts       Account[]
+  sessions       Session[]
+  createdAt      DateTime  @default(now())
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Product {
+  id            String   @id
+  name          String
+  category      String
+  price         Float
+  description   String   @default("")
+  cut           String   @default("")
+  carat         Float    @default(0)
+  clarity       String   @default("")
+  certification String   @default("")
+  image         String   @default("")
+  rating        Float    @default(0)
+  reviews       Int      @default(0)
+  inStock       Boolean  @default(true)
+  color         String   @default("")
+  metal         String   @default("")
+  collection    String   @default("")
+  certificate   String   @default("")
+  shape         String   @default("")
+  gemType       String   @default("")
+  origin        String   @default("")
+  treatment     String   @default("")
+  stockCount    Int      @default(0)
+  draft         Boolean  @default(false)
+  images        String   @default("[]")
+  video         String   @default("")
+}
+
+model Collection {
+  id          String @id
+  name        String
+  badge       String
+  description String
+  image       String
+}
+
+model Booking {
+  id        String @id
+  client    String
+  email     String
+  type      String
+  date      String
+  slot      String
+  notes     String
+}
+
+model Order {
+  id                String  @id
+  date              String
+  status            String
+  shiprocketStatus  String
+  shippingDetails   String  // Store as stringified JSON
+  items             String  // Store as stringified JSON
+  courierDetails    String? // Store as stringified JSON
+  shiprocketHistory String? // Store as stringified JSON
+}
+
+model Blog {
+  id       String @id
+  title    String
+  excerpt  String
+  category String
+  date     String
+}
+
+model OfficialSettings {
+  id              String @id @default("singleton")
+  gstRate         Float  @default(3.0)
+  facebook        String @default("")
+  instagram       String @default("")
+  pinterest       String @default("")
+  shippingContent String @default("")
+  returnsContent  String @default("")
+  faqContent      String @default("")
+  privacyContent  String @default("")
+  termsContent    String @default("")
+  // Site-wide UI configuration stored as JSON strings
+  headerConfig     String @default("{}")
+  heroConfig       String @default("{}")
+  announcements    String @default("[]")
+  features         String @default("[]")
+  featuredGems     String @default("[]")
+  homepageCollections String @default("[]")
+  evaluatorConfig  String @default("{}")
+  milestones       String @default("[]")
+  editorialQuote   String @default("{}")
+  aboutConfig      String @default("{}")
+  contactConfig    String @default("{}")
+  customBuilderConfig String @default("{}")
+}

@@ -3,7 +3,7 @@
 import * as React from "react";
 import NextImage from "next/image";
 import { ProductCard } from "./ProductCard";
-import { Product } from "@/mocks/products";
+import { Product } from "@/types/product";
 import { Grid, List, HelpCircle } from "lucide-react";
 
 interface ProductGridProps {

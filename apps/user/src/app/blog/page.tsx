@@ -1,3 +1,5 @@
+"use client";
+
 import * as React from "react";
 import Link from "next/link";
 import { Header } from "@/components/layout/Header";
@@ -5,26 +7,18 @@ import { Footer } from "@/components/layout/Footer";
 import { Calendar, ArrowRight } from "lucide-react";
 
 export default function BlogPage() {
-  const posts = [
-    {
-      title: "Understanding the 4 Cs of Diamonds",
-      excerpt: "A comprehensive client guide on grading Carat, Color, Clarity, and Cut according to modern GIA methodologies.",
-      date: "June 25, 2026",
-      category: "Education",
-    },
-    {
-      title: "Why GIA Certification Matters",
-      excerpt: "Exploring the differences in global grading labs and why the Gemological Institute of America remains the absolute standard.",
-      date: "June 18, 2026",
-      category: "Industry Insights",
-    },
-    {
-      title: "Conflict-Free & Sourcing Ethics",
-      excerpt: "Behind the Kimberley Process: How Nakshtara verifies that every loose diamond is ethically and clean-sourced.",
-      date: "June 12, 2026",
-      category: "Ethics",
-    }
-  ];
+  const [posts, setPosts] = React.useState<any[]>([]);
+
+  React.useEffect(() => {
+    fetch("/api/db")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.blog) {
+          setPosts(data.blog);
+        }
+      })
+      .catch((err) => console.error("Error loading blog posts:", err));
+  }, []);
 
   return (
     <>
